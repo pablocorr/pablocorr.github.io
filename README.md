@@ -100,61 +100,57 @@ Copier-coller le code ci-dessous dans le fichier `index.html` à la racine du d�
   </div>
 
 <script>
-  const owner = "pablocorr";
-  const repo = "polerd.github.io";
-  const rootPath = "Automates";
+  const repoOwner = "pablocorr";
+  const repoName = "polerd.github.io";
+  const branch = "main";
+  const rootFolder = "Automates";
 
   const contentDiv = document.getElementById("content");
-  let allHtmlFiles = [];
-
-  async function fetchFolder(path) {
-    const url = `https://api.github.com/repos/${owner}/${repo}/contents/${path}`;
-    const response = await fetch(url);
-    if (!response.ok) return;
-
-    const items = await response.json();
-
-    for (const item of items) {
-      if (item.type === "file" && item.name.endsWith(".html")) {
-        allHtmlFiles.push(item);
-      }
-      if (item.type === "dir") {
-        await fetchFolder(item.path);
-      }
-    }
-  }
 
   async function loadAutomates() {
     try {
-      await fetchFolder(rootPath);
+      const url = `https://raw.githubusercontent.com/${repoOwner}/${repoName}/${branch}/_config.yml`;
+      
+      // Hack GitHub Pages : on récupère tout le repo via l’API Git tree
+      const treeUrl = `https://api.github.com/repos/${repoOwner}/${repoName}/git/trees/${branch}?recursive=1`;
+      const response = await fetch(treeUrl);
+      const data = await response.json();
 
-      if (allHtmlFiles.length === 0) {
+      const htmlFiles = data.tree.filter(item =>
+        item.type === "blob" &&
+        item.path.startsWith(rootFolder + "/") &&
+        item.path.endsWith(".html")
+      );
+
+      if (htmlFiles.length === 0) {
         contentDiv.innerHTML = "<div class='error'>Aucun automate trouvé.</div>";
         return;
       }
 
-      const buttonsContainer = document.createElement("div");
-      buttonsContainer.className = "buttons";
+      const container = document.createElement("div");
+      container.className = "buttons";
 
-      allHtmlFiles.forEach(file => {
+      htmlFiles.forEach(file => {
         const link = document.createElement("a");
         link.className = "btn";
         link.href = file.path;
-        link.textContent = file.name.replace(".html", "");
-        buttonsContainer.appendChild(link);
+        link.textContent = file.path
+          .replace(rootFolder + "/", "")
+          .replace(".html", "");
+        container.appendChild(link);
       });
 
-      contentDiv.replaceWith(buttonsContainer);
-    } catch (err) {
-      console.error(err);
+      contentDiv.replaceWith(container);
+    } catch (e) {
+      console.error(e);
       contentDiv.innerHTML =
-        "<div class='error'>Erreur lors du chargement des automates.</div>";
+        "<div class='error'>Erreur de chargement des automates.</div>";
     }
   }
 
   loadAutomates();
 </script>
 
+
 </body>
 </html>
-
