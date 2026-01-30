@@ -134,9 +134,12 @@ Copier-coller le code ci-dessous dans le fichier `index.html` √† la racine du d√
         const link = document.createElement("a");
         link.className = "btn";
         link.href = file.path;
-        link.textContent = file.path
-          .replace(rootFolder + "/", "")
-          .replace(".html", "");
+		const rawName = file.path
+		  .replace(rootFolder + "/", "")
+		  .replace(".html", "")
+		  .replace(/_/g, " ");
+
+		link.textContent = rawName.charAt(0).toUpperCase() + rawName.slice(1);
         container.appendChild(link);
       });
 
