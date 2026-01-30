@@ -1,0 +1,1514 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Word → CSV (GRETA) - Générateur</title>
+
+  <script src="https://unpkg.com/mammoth/mammoth.browser.min.js"></script>
+
+  <style>
+    :root{
+      --bg1:#667eea;
+      --bg2:#764ba2;
+      --bg3:#f093fb;
+
+      --card: rgba(255,255,255,.95);
+      --card2: rgba(255,255,255,.75);
+      --text:#1a202c;
+      --muted: rgba(26,32,44,.65);
+      --border: rgba(103,110,144,.18);
+
+      --btn:#667eea;
+      --btnText:#fff;
+      --btnHover:#5568d3;
+      --btnGhost: rgba(102,126,234,.08);
+
+      --good: #38a169;
+      --warn: #d69e2e;
+      --bad:  #e53e3e;
+
+      --shadow: 0 20px 60px rgba(102,126,234,.15);
+      --shadowHover: 0 25px 70px rgba(102,126,234,.25);
+      --radius: 20px;
+      --radiusSmall: 14px;
+
+      --field: rgba(255,255,255,.90);
+      --fieldText: #1a202c;
+      --focus: rgba(102,126,234,.55);
+    }
+
+    [data-theme="dark"]{
+      --card: rgba(26,32,44,.92);
+      --card2: rgba(26,32,44,.72);
+      --text:#f7fafc;
+      --muted: rgba(247,250,252,.70);
+      --border: rgba(203,213,224,.20);
+
+      --btn:#667eea;
+      --btnHover:#7c8ff0;
+      --btnGhost: rgba(102,126,234,.12);
+
+      --shadow: 0 25px 70px rgba(0,0,0,.40);
+      --shadowHover: 0 30px 80px rgba(0,0,0,.55);
+
+      --field: rgba(45,55,72,.90);
+      --fieldText: #f7fafc;
+      --focus: rgba(140,170,255,.65);
+    }
+
+    *{ box-sizing:border-box; }
+    
+    @keyframes gradientShift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+    
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    body{
+      margin:0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      color:var(--text);
+      min-height:100vh;
+      background: linear-gradient(135deg, var(--bg1), var(--bg2), var(--bg3));
+      background-size: 200% 200%;
+      animation: gradientShift 15s ease infinite;
+      display:flex;
+      align-items:stretch;
+      justify-content:center;
+      padding:32px 16px;
+      position: relative;
+    }
+    
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle at 20% 50%, rgba(255,255,255,.1) 0%, transparent 50%),
+                  radial-gradient(circle at 80% 80%, rgba(255,255,255,.08) 0%, transparent 50%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .shell{
+      width:min(1200px, 100%);
+      display:flex;
+      flex-direction:column;
+      gap:20px;
+      position: relative;
+      z-index: 1;
+      animation: fadeInUp 0.6s ease;
+    }
+
+    header{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:16px;
+      padding:20px 24px;
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(20px);
+      transition: box-shadow 0.3s ease, transform 0.3s ease;
+    }
+    
+    header:hover {
+      box-shadow: var(--shadowHover);
+      transform: translateY(-2px);
+    }
+
+    .title{
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+      line-height:1.2;
+    }
+    .title h1{
+      margin:0;
+      font-size:24px;
+      font-weight:700;
+      letter-spacing:-0.5px;
+      background: linear-gradient(135deg, var(--bg1), var(--bg2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .title p{
+      margin:0;
+      font-size:14px;
+      color:var(--muted);
+      font-weight:500;
+    }
+
+    .top-actions{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+
+    .btn{
+      border:1px solid transparent;
+      border-radius:var(--radiusSmall);
+      padding:12px 20px;
+      background:var(--btn);
+      color:var(--btnText);
+      font-weight:600;
+      font-size:14px;
+      cursor:pointer;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      user-select:none;
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+      white-space:nowrap;
+      box-shadow: 0 4px 12px rgba(102,126,234,.25);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .btn::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      border-radius: 50%;
+      background: rgba(255,255,255,.2);
+      transform: translate(-50%, -50%);
+      transition: width 0.6s, height 0.6s;
+    }
+    
+    .btn:hover::before {
+      width: 300px;
+      height: 300px;
+    }
+    
+    .btn:hover {
+      background:var(--btnHover);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(102,126,234,.35);
+    }
+    
+    .btn:active {
+      transform: translateY(0);
+      box-shadow: 0 2px 8px rgba(102,126,234,.25);
+    }
+    
+    .btn[disabled]{
+      opacity:.5;
+      cursor:not-allowed;
+      transform: none !important;
+      box-shadow: none;
+    }
+
+    .btn.ghost{
+      background: var(--btnGhost);
+      color: var(--text);
+      border: 1px solid var(--border);
+      box-shadow: none;
+    }
+    
+    .btn.ghost:hover {
+      background: var(--btn);
+      color: var(--btnText);
+      border-color: transparent;
+      box-shadow: 0 4px 12px rgba(102,126,234,.20);
+    }
+    
+    .btn.mini {
+      padding: 6px 12px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns: 1.1fr .9fr;
+      gap:20px;
+    }
+    @media (max-width: 980px){
+      .grid{ grid-template-columns: 1fr; }
+    }
+
+    .card{
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(20px);
+      overflow:hidden;
+      transition: box-shadow 0.3s ease, transform 0.3s ease;
+    }
+    
+    .card:hover {
+      box-shadow: var(--shadowHover);
+      transform: translateY(-3px);
+    }
+
+    .card .hd{
+      padding:18px 24px;
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:16px;
+      border-bottom:1px solid var(--border);
+      background: linear-gradient(180deg, rgba(102,126,234,.04), transparent);
+    }
+
+    .hd .meta{
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+    }
+    .hd .meta .h{
+      font-weight:700;
+      font-size:18px;
+      letter-spacing:-0.3px;
+      color:var(--text);
+    }
+    .hd .meta .s{
+      font-size:14px;
+      color:var(--muted);
+      line-height:1.4;
+      font-weight:500;
+    }
+
+    .card .bd{
+      padding:20px 24px 24px;
+    }
+
+    .drop{
+      border:2px dashed var(--border);
+      background: linear-gradient(135deg, rgba(102,126,234,.04), rgba(118,75,162,.04));
+      border-radius:var(--radius);
+      padding:40px 24px;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      text-align:center;
+      gap:12px;
+      cursor:pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      user-select:none;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .drop::before {
+      content: '📄';
+      font-size: 48px;
+      opacity: 0.15;
+      position: absolute;
+      transition: all 0.4s ease;
+    }
+    
+    .drop:hover::before {
+      transform: scale(1.2) rotate(5deg);
+      opacity: 0.25;
+    }
+    
+    .drop:hover{
+      transform: translateY(-4px);
+      border-color: var(--btn);
+      background: linear-gradient(135deg, rgba(102,126,234,.08), rgba(118,75,162,.08));
+      box-shadow: 0 10px 30px rgba(102,126,234,.2);
+    }
+    
+    .drop.dragover{
+      border-color: var(--btn);
+      background: linear-gradient(135deg, rgba(102,126,234,.15), rgba(118,75,162,.15));
+      transform: scale(1.02);
+    }
+    
+    .drop strong{
+      font-weight:700;
+      font-size:16px;
+      position: relative;
+      z-index: 1;
+    }
+    
+    .drop small{
+      display:block;
+      color:var(--muted);
+      margin-top:6px;
+      font-size:13px;
+      position: relative;
+      z-index: 1;
+    }
+
+    input[type="file"]{ display:none; }
+
+    .status{
+      margin-top:16px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      font-size:14px;
+      color:var(--muted);
+    }
+    
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+      padding:10px 16px;
+      border-radius:999px;
+      border:1px solid var(--border);
+      background: var(--card2);
+      width:fit-content;
+      color: var(--text);
+      font-weight:600;
+      font-size:13px;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(10px);
+    }
+    
+    .pill:hover {
+      transform: translateX(3px);
+    }
+
+    .pill.good{
+      border-color: var(--good);
+      background: rgba(56, 161, 105, 0.1);
+      color: var(--good);
+    }
+    
+    .pill.warn{
+      border-color: var(--warn);
+      background: rgba(214, 158, 46, 0.1);
+      color: var(--warn);
+    }
+    
+    .pill.bad{
+      border-color: var(--bad);
+      background: rgba(229, 62, 62, 0.1);
+      color: var(--bad);
+    }
+
+    .mono{
+      font-family: 'SF Mono', 'Monaco', 'Consolas', 'Liberation Mono', 'Courier New', monospace;
+      font-size:13px;
+      line-height:1.6;
+      white-space:pre;
+      overflow:auto;
+      background: linear-gradient(135deg, rgba(102,126,234,.04), rgba(118,75,162,.04));
+      border:1px solid var(--border);
+      border-radius:var(--radiusSmall);
+      padding:16px;
+      max-height: 320px;
+      transition: all 0.3s ease;
+    }
+    
+    .mono:hover {
+      background: linear-gradient(135deg, rgba(102,126,234,.06), rgba(118,75,162,.06));
+      border-color: var(--btn);
+    }
+
+    .table-wrap{
+      overflow:auto;
+      border:1px solid var(--border);
+      border-radius:var(--radiusSmall);
+      background: var(--card2);
+      max-height: 480px;
+      transition: all 0.3s ease;
+    }
+    
+    .table-wrap:hover {
+      border-color: var(--btn);
+      box-shadow: 0 4px 12px rgba(102,126,234,.15);
+    }
+    
+    table{
+      border-collapse:collapse;
+      width:100%;
+      min-width: 600px;
+    }
+    
+    th, td{
+      padding:14px 16px;
+      border-bottom:1px solid var(--border);
+      text-align:left;
+      font-size:14px;
+      vertical-align:top;
+      transition: background 0.2s ease;
+    }
+    
+    th{
+      position:sticky;
+      top:0;
+      background: linear-gradient(180deg, var(--card), rgba(102,126,234,.05));
+      z-index:1;
+      font-weight:700;
+      font-size:13px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--btn);
+    }
+    
+    tr:hover td {
+      background: rgba(102,126,234,.03);
+    }
+    
+    tr:last-child td{ border-bottom:none; }
+
+    .muted{ color:var(--muted); }
+
+    .actions{
+      display:flex;
+      flex-wrap:wrap;
+      gap:12px;
+      margin-top:16px;
+    }
+
+    .toast{
+      position:fixed;
+      left:50%;
+      transform:translateX(-50%);
+      bottom:24px;
+      background: linear-gradient(135deg, rgba(26,32,44,.95), rgba(45,55,72,.95));
+      color:#fff;
+      padding:14px 20px;
+      border-radius:var(--radiusSmall);
+      font-size:14px;
+      font-weight:600;
+      opacity:0;
+      pointer-events:none;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      max-width:min(700px, calc(100% - 40px));
+      box-shadow: 0 10px 40px rgba(0,0,0,.3);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,.1);
+      z-index: 10000;
+    }
+    
+    .toast.show{
+      opacity:1;
+      transform:translateX(-50%) translateY(-8px);
+    }
+
+    .kpi{
+      display:flex;
+      gap:14px;
+      flex-wrap:wrap;
+      margin-top:12px;
+    }
+    
+    .kpi .box{
+      background: linear-gradient(135deg, rgba(102,126,234,.06), rgba(118,75,162,.06));
+      border:1px solid var(--border);
+      border-radius:var(--radiusSmall);
+      padding:16px 18px;
+      min-width: 160px;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .kpi .box::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 3px;
+      background: linear-gradient(90deg, var(--bg1), var(--bg2));
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    
+    .kpi .box:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 20px rgba(102,126,234,.2);
+      border-color: var(--btn);
+    }
+    
+    .kpi .box:hover::before {
+      opacity: 1;
+    }
+    
+    .kpi .box .n{
+      font-weight:800;
+      font-size:28px;
+      line-height:1.1;
+      background: linear-gradient(135deg, var(--bg1), var(--bg2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    .kpi .box .l{
+      margin-top:6px;
+      font-size:13px;
+      text-transform:uppercase;
+      letter-spacing:0.5px;
+      color:var(--muted);
+      font-weight:600;
+    }
+
+    #themeBtn{
+      width:44px;
+      height:44px;
+      border-radius:50%;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:20px;
+      padding:0;
+      transition: all 0.3s ease;
+    }
+    
+    #themeBtn:hover {
+      transform: rotate(180deg) scale(1.1);
+    }
+    
+    /* Modal Editor Styles */
+    .modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,.65);
+      backdrop-filter: blur(8px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      padding: 20px;
+      animation: fadeIn 0.3s ease;
+    }
+    
+    .modal.open {
+      display: flex;
+    }
+    
+    .modal-content {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: 0 30px 90px rgba(0,0,0,.4);
+      max-width: min(1100px, 100%);
+      max-height: 90vh;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      animation: slideDown 0.4s ease;
+      overflow: hidden;
+    }
+    
+    .modal-header {
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: linear-gradient(180deg, rgba(102,126,234,.04), transparent);
+    }
+    
+    .modal-header h2 {
+      margin: 0;
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text);
+    }
+    
+    .modal-body {
+      padding: 20px 24px;
+      overflow-y: auto;
+      flex: 1;
+    }
+    
+    .modal-footer {
+      padding: 16px 24px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      gap: 12px;
+      justify-content: space-between;
+      align-items: center;
+      background: linear-gradient(180deg, transparent, rgba(102,126,234,.02));
+    }
+    
+    .field {
+      width: 100%;
+      padding: 10px 14px;
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      background: var(--field);
+      color: var(--fieldText);
+      font-size: 14px;
+      font-family: inherit;
+      transition: all 0.25s ease;
+      outline: none;
+    }
+    
+    .field:focus {
+      border-color: var(--focus);
+      box-shadow: 0 0 0 3px rgba(102,126,234,.1);
+      background: var(--card);
+    }
+    
+    .field.invalid {
+      border-color: var(--bad);
+      background: rgba(229, 62, 62, 0.05);
+    }
+    
+    .field.invalid:focus {
+      box-shadow: 0 0 0 3px rgba(229, 62, 62, .15);
+    }
+    
+    .editor-table-wrap {
+      overflow: auto;
+      border: 1px solid var(--border);
+      border-radius: var(--radiusSmall);
+      max-height: 500px;
+      background: var(--card2);
+    }
+    
+    .editor-table-wrap table {
+      min-width: 900px;
+    }
+    
+    .row-tools {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    
+    .editor-msg {
+      margin-top: 16px;
+      padding: 14px 16px;
+      border-radius: var(--radiusSmall);
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    
+    .hint {
+      color: var(--muted);
+      font-weight: 500;
+    }
+    
+    .warnline {
+      color: var(--warn);
+      font-weight: 600;
+      padding: 12px 16px;
+      background: rgba(214, 158, 46, 0.1);
+      border-left: 3px solid var(--warn);
+      border-radius: var(--radiusSmall);
+    }
+    
+    .badline {
+      color: var(--bad);
+      font-weight: 600;
+      padding: 12px 16px;
+      background: rgba(229, 62, 62, 0.1);
+      border-left: 3px solid var(--bad);
+      border-radius: var(--radiusSmall);
+    }
+    
+    .editor-stats {
+      font-size: 14px;
+      color: var(--muted);
+      font-weight: 600;
+    }
+    
+    /* Scrollbar personnalisée */
+    ::-webkit-scrollbar {
+      width: 10px;
+      height: 10px;
+    }
+    
+    ::-webkit-scrollbar-track {
+      background: var(--card2);
+      border-radius: 10px;
+    }
+    
+    ::-webkit-scrollbar-thumb {
+      background: var(--btn);
+      border-radius: 10px;
+      transition: background 0.3s ease;
+    }
+    
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--btnHover);
+    }
+    
+    /* Responsive amélioré */
+    @media (max-width: 768px) {
+      .shell { gap: 16px; }
+      header { padding: 16px 20px; flex-direction: column; align-items: stretch; }
+      .title h1 { font-size: 20px; }
+      .top-actions { justify-content: stretch; }
+      .btn { flex: 1; justify-content: center; }
+      .card .hd, .card .bd { padding: 16px 20px; }
+      .kpi .box { min-width: 140px; }
+      .modal-content { max-height: 95vh; }
+      .modal-header, .modal-body, .modal-footer { padding: 16px 20px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="shell">
+  <header>
+    <div class="title">
+      <h1>Word → CSV (GRETA)</h1>
+      <p>Convertisseur Word vers CSV pour e-GRETA</p>
+    </div>
+    <div class="top-actions">
+      <button class="btn ghost" id="themeBtn">🌙</button>
+      <button class="btn" id="resetBtn">🔄 Réinitialiser</button>
+    </div>
+  </header>
+
+  <div class="grid">
+    <!-- LEFT: Upload & extraction -->
+    <div class="card">
+      <div class="hd">
+        <div class="meta">
+          <div class="h">📤 Import du fichier</div>
+          <div class="s">Glissez-déposez ou cliquez pour sélectionner un fichier .docx</div>
+        </div>
+      </div>
+      <div class="bd">
+        <div class="drop" id="dropZone">
+          <strong>Cliquez ou glissez votre fichier Word ici</strong>
+          <small>Format accepté : .docx uniquement</small>
+        </div>
+        <input type="file" id="fileInput" accept=".docx" />
+
+        <div class="status">
+          <div class="pill" id="filePill">Aucun fichier chargé</div>
+          <div class="pill" id="previewPill">En attente de données</div>
+        </div>
+
+        <div class="kpi">
+          <div class="box">
+            <div class="n" id="rowsOk">0</div>
+            <div class="l">Lignes OK</div>
+          </div>
+          <div class="box">
+            <div class="n" id="rowsSkipped">0</div>
+            <div class="l">Ignorées</div>
+          </div>
+          <div class="box">
+            <div class="n" id="rowsErrors">0</div>
+            <div class="l">Erreurs</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: Preview & Actions -->
+    <div class="card">
+      <div class="hd">
+        <div class="meta">
+          <div class="h">👁️ Aperçu & Export</div>
+          <div class="s">Visualisez et exportez les données extraites</div>
+        </div>
+      </div>
+      <div class="bd">
+        <div class="actions">
+          <button class="btn ghost" id="previewWordBtn" disabled>📋 Aperçu Word</button>
+          <button class="btn ghost" id="previewCsvBtn" disabled>📄 Aperçu CSV</button>
+          <button class="btn ghost" id="editBtn" disabled>✏️ Éditer</button>
+        </div>
+
+        <div id="wordPreview" style="display:none; margin-top:16px;">
+          <div class="table-wrap" id="wordPreviewBox"></div>
+        </div>
+
+        <div id="csvPreview" style="display:none; margin-top:16px;">
+          <div class="mono" id="csvPreviewBox"></div>
+        </div>
+
+        <div class="actions">
+          <button class="btn" id="downloadBtn" disabled>⬇️ Télécharger CSV</button>
+          <button class="btn" id="mailBtn" disabled>✉️ Copier pour mail</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Editor -->
+<div class="modal" id="editorModal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2>✏️ Éditeur de lignes</h2>
+      <button class="btn ghost mini" id="closeEditorBtn">✕ Fermer</button>
+    </div>
+    <div class="modal-body">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+        <div class="editor-stats" id="editorStats"></div>
+        <button class="btn ghost mini" id="addRowBtn">➕ Ajouter une ligne</button>
+      </div>
+
+      <div class="editor-table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Identifiant (email)</th>
+              <th>Prénom</th>
+              <th>Nom</th>
+              <th>Email</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="editorTbody"></tbody>
+        </table>
+      </div>
+
+      <div id="editorMsg" class="editor-msg"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn ghost" id="closeEditorBtn2">Annuler</button>
+      <button class="btn" id="saveEditorBtn" disabled>💾 Enregistrer les modifications</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  "use strict";
+
+  const FIXED_PASSWORD = "1234*";
+  const FIXED_ACADEMIE = "Bordeaux";
+  const CSV_HEADER = "username;password;firstname;lastname;email;profile_field_academie";
+  const EXAMPLE_EMAIL_RAW = "michel.martin@greta-cfa-aquitaine.fr";
+
+  const dropZone = document.getElementById("dropZone");
+  const fileInput = document.getElementById("fileInput");
+  const filePill = document.getElementById("filePill");
+  const previewPill = document.getElementById("previewPill");
+  const wordPreview = document.getElementById("wordPreview");
+  const csvPreview = document.getElementById("csvPreview");
+  const wordPreviewBox = document.getElementById("wordPreviewBox");
+  const csvPreviewBox = document.getElementById("csvPreviewBox");
+  const previewWordBtn = document.getElementById("previewWordBtn");
+  const previewCsvBtn = document.getElementById("previewCsvBtn");
+  const editBtn = document.getElementById("editBtn");
+  const downloadBtn = document.getElementById("downloadBtn");
+  const mailBtn = document.getElementById("mailBtn");
+  const resetBtn = document.getElementById("resetBtn");
+  const themeBtn = document.getElementById("themeBtn");
+  const toastEl = document.getElementById("toast");
+
+  const rowsOkEl = document.getElementById("rowsOk");
+  const rowsSkippedEl = document.getElementById("rowsSkipped");
+  const rowsErrorsEl = document.getElementById("rowsErrors");
+
+  const editorModal = document.getElementById("editorModal");
+  const closeEditorBtn = document.getElementById("closeEditorBtn");
+  const closeEditorBtn2 = document.getElementById("closeEditorBtn2");
+  const editorTbody = document.getElementById("editorTbody");
+  const editorStats = document.getElementById("editorStats");
+  const editorMsg = document.getElementById("editorMsg");
+  const addRowBtn = document.getElementById("addRowBtn");
+  const saveEditorBtn = document.getElementById("saveEditorBtn");
+
+  let extractedRows = [];
+  let csvText = "";
+  let skippedCount = 0;
+  let errorCount = 0;
+  let loadedFile = null;
+
+  let editorRows = [];
+  let editorInvalidCount = 0;
+
+  function toast(msg){
+    toastEl.textContent = msg;
+    toastEl.classList.add("show");
+    setTimeout(() => toastEl.classList.remove("show"), 3000);
+  }
+
+  function resetAll(){
+    extractedRows = [];
+    csvText = "";
+    skippedCount = 0;
+    errorCount = 0;
+    loadedFile = null;
+
+    filePill.textContent = "Aucun fichier chargé";
+    filePill.className = "pill";
+    previewPill.textContent = "En attente de données";
+    previewPill.className = "pill";
+
+    wordPreview.style.display = "none";
+    csvPreview.style.display = "none";
+    wordPreviewBox.innerHTML = "";
+    csvPreviewBox.textContent = "";
+
+    updateCounters();
+    setUiEnabled(false);
+  }
+
+  resetBtn.onclick = () => {
+    resetAll();
+    fileInput.value = "";
+    toast("Application réinitialisée.");
+  };
+
+  let darkMode = false;
+  themeBtn.onclick = () => {
+    darkMode = !darkMode;
+    document.documentElement.setAttribute("data-theme", darkMode ? "dark" : "");
+    themeBtn.textContent = darkMode ? "☀️" : "🌙";
+    toast(darkMode ? "Mode sombre activé" : "Mode clair activé");
+  };
+
+  function cleanSpaces(txt){
+    return String(txt).replace(/[\u00A0\u1680\u2000-\u200B\u202F\u205F\u3000\uFEFF]/g, " ").trim();
+  }
+
+  function normalizeHyphens(s){
+    return String(s).replace(/[\u2010\u2011\u2012\u2013\u2014\u2212\uFE63\uFF0D]/g, "-");
+  }
+
+  function cleanEmail(raw){
+    let e = cleanSpaces(raw);
+    e = normalizeHyphens(e);
+    e = e.replace(/\s+/g, "");
+    e = e.replace(/^mailto:/i, "");
+    e = e.replace(/;+$/g, "");
+    return e.toLowerCase();
+  }
+
+  const EXAMPLE_EMAIL = cleanEmail(EXAMPLE_EMAIL_RAW);
+
+  function isValidEmail(email){
+    return /^[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,}$/i.test(email);
+  }
+
+  function parseCandidateLine(line){
+    const parts = line.split(",").map(p => cleanSpaces(p));
+    if (parts.length < 6) return { ok:false, reason:"Pas assez de champs" };
+
+    const username = cleanEmail(parts[0]);
+    const firstname = cleanSpaces(parts[2]);
+    const lastname  = cleanSpaces(parts[3]);
+    const email     = cleanEmail(parts[4]);
+
+    const isExample =
+      username === EXAMPLE_EMAIL ||
+      email === EXAMPLE_EMAIL ||
+      (firstname.toLowerCase() === "michel" && lastname.toLowerCase() === "martin" && (username.includes("michel.martin@") || email.includes("michel.martin@")));
+
+    if (isExample){
+      return { ok:false, skipped:true, reason:"Ligne d'exemple" };
+    }
+
+    if (!username || !email || !firstname || !lastname) {
+      return { ok:false, reason:"Champs vides" };
+    }
+
+    if (!isValidEmail(email) || !isValidEmail(username)){
+      return { ok:false, reason:"Email invalide" };
+    }
+
+    return {
+      ok:true,
+      row:{
+        username,
+        password: FIXED_PASSWORD,
+        firstname,
+        lastname,
+        email,
+        profile_field_academie: FIXED_ACADEMIE
+      }
+    };
+  }
+
+  function toCsv(rows){
+    const lines = [CSV_HEADER];
+    for (const r of rows){
+      lines.push([
+        r.username,
+        FIXED_PASSWORD,
+        r.firstname,
+        r.lastname,
+        r.email,
+        FIXED_ACADEMIE
+      ].join(";"));
+    }
+    return lines.join("\n");
+  }
+
+  function buildPreviewTable(rows){
+    const escape = (s) => String(s)
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;")
+      .replaceAll("'","&#039;");
+
+    const th = ["Nom","Prénom","Identifiant","Mot de passe"];
+    const head = `<tr>${th.map(x => `<th>${escape(x)}</th>`).join("")}</tr>`;
+    const body = rows.map(r => `
+      <tr>
+        <td>${escape(r.lastname)}</td>
+        <td>${escape(r.firstname)}</td>
+        <td>${escape(r.email)}</td>
+        <td>${escape(r.password)}</td>
+      </tr>
+    `).join("");
+
+    return `<table>${head}${body}</table>`;
+  }
+
+  async function copyHtmlToClipboard(html, fallbackText){
+    try{
+      if (navigator.clipboard && window.ClipboardItem){
+        const blobHtml = new Blob([html], { type: "text/html" });
+        const blobTxt  = new Blob([fallbackText], { type: "text/plain" });
+        const item = new ClipboardItem({ "text/html": blobHtml, "text/plain": blobTxt });
+        await navigator.clipboard.write([item]);
+        return true;
+      }
+    }catch(_){}
+
+    await navigator.clipboard.writeText(fallbackText);
+    return false;
+  }
+
+  function setUiEnabled(enabled){
+    previewWordBtn.disabled = !enabled;
+    previewCsvBtn.disabled = !enabled;
+    downloadBtn.disabled = !enabled;
+    mailBtn.disabled = !enabled;
+    editBtn.disabled = !enabled;
+  }
+
+  function updateCounters(){
+    rowsOkEl.textContent = String(extractedRows.length);
+    rowsSkippedEl.textContent = String(skippedCount);
+    rowsErrorsEl.textContent = String(errorCount);
+  }
+
+  function refreshDerivedOutputs(){
+    csvText = toCsv(extractedRows);
+    updateCounters();
+    setUiEnabled(extractedRows.length > 0);
+
+    if (extractedRows.length > 0){
+      previewPill.textContent = "Données extraites - prêt";
+      previewPill.className = "pill good";
+    } else {
+      previewPill.textContent = "Aucune donnée valide trouvée";
+      previewPill.className = "pill bad";
+    }
+
+    if (wordPreview.style.display === "block"){
+      wordPreviewBox.innerHTML = buildPreviewTable(extractedRows);
+    }
+    if (csvPreview.style.display === "block"){
+      csvPreviewBox.textContent = csvText || "";
+    }
+  }
+
+  function showWordPreview(){
+    wordPreview.style.display = "block";
+    csvPreview.style.display = "none";
+    previewPill.textContent = "Aperçu Word affiché";
+    previewPill.className = "pill good";
+    wordPreviewBox.innerHTML = buildPreviewTable(extractedRows);
+  }
+
+  function showCsvPreview(){
+    csvPreview.style.display = "block";
+    wordPreview.style.display = "none";
+    previewPill.textContent = "Aperçu CSV affiché";
+    previewPill.className = "pill good";
+    csvPreviewBox.textContent = csvText || "";
+  }
+
+  function downloadCsv(){
+    const blob = new Blob([csvText], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    const base = (loadedFile?.name || "export").replace(/\.docx$/i, "");
+    a.href = url;
+    a.download = `${base}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  }
+
+  async function copyMail(){
+    const tableHtml = buildPreviewTable(extractedRows);
+    const html =
+`<p>Bonjour,</p>
+<p>Votre demande a bien été traitée :</p>
+${tableHtml}
+<p>Cordialement,</p>`;
+
+    const fallback =
+`Bonjour,
+Votre demande a bien été traitée :
+${extractedRows.map(r => `${r.lastname}\t${r.firstname}\t${r.email}\t${r.password}`).join("\n")}
+Cordialement,`;
+
+    const rich = await copyHtmlToClipboard(html, fallback);
+    toast(rich ? "Mail HTML copié (format riche)." : "Mail copié (texte).");
+  }
+
+  function openEditor(){
+    editorRows = extractedRows.map(r => ({
+      username: r.username,
+      firstname: r.firstname,
+      lastname: r.lastname,
+      email: r.email
+    }));
+    renderEditor(null);
+    editorModal.classList.add("open");
+    toast("Éditeur ouvert.");
+  }
+
+  function closeEditor(){
+    editorModal.classList.remove("open");
+  }
+
+  closeEditorBtn2.addEventListener("click", closeEditor);
+
+  function restoreFocus(fi){
+    if (!fi) return;
+    setTimeout(() => {
+      const input = editorTbody.querySelector(`input[data-row="${fi.row}"][data-col="${fi.col}"]`);
+      if (input){
+        input.focus();
+        if (typeof fi.start === "number" && typeof fi.end === "number"){
+          try{ input.setSelectionRange(fi.start, fi.end); } catch(_){}
+        }
+      }
+    }, 10);
+  }
+
+  function renderEditor(focusInfo){
+    editorTbody.innerHTML = "";
+    editorInvalidCount = 0;
+
+    const mkInput = ({value, row, col, invalid, onInput}) => {
+      const input = document.createElement("input");
+      input.type = "text";
+      input.value = value ?? "";
+      input.className = "field" + (invalid ? " invalid" : "");
+      input.dataset.row = String(row);
+      input.dataset.col = col;
+
+      input.addEventListener("input", (e) => {
+        const fi = { row, col, start: e.target.selectionStart, end: e.target.selectionEnd };
+        onInput(e.target.value, fi);
+      });
+
+      return input;
+    };
+
+    editorRows.forEach((r, idx) => {
+      const tr = document.createElement("tr");
+
+      const tdU = document.createElement("td");
+      const userVal = cleanEmail(r.username);
+      const userOk = isValidEmail(userVal) && userVal !== EXAMPLE_EMAIL;
+      if (!userOk) editorInvalidCount++;
+      tdU.appendChild(mkInput({
+        value: r.username, row: idx, col: "username", invalid: !userOk,
+        onInput: (v, fi) => { editorRows[idx].username = v; renderEditor(fi); }
+      }));
+
+      const tdF = document.createElement("td");
+      const fnOk = !!cleanSpaces(r.firstname);
+      if (!fnOk) editorInvalidCount++;
+      tdF.appendChild(mkInput({
+        value: r.firstname, row: idx, col: "firstname", invalid: !fnOk,
+        onInput: (v, fi) => { editorRows[idx].firstname = v; renderEditor(fi); }
+      }));
+
+      const tdL = document.createElement("td");
+      const lnOk = !!cleanSpaces(r.lastname);
+      if (!lnOk) editorInvalidCount++;
+      tdL.appendChild(mkInput({
+        value: r.lastname, row: idx, col: "lastname", invalid: !lnOk,
+        onInput: (v, fi) => { editorRows[idx].lastname = v; renderEditor(fi); }
+      }));
+
+      const tdE = document.createElement("td");
+      const emailVal = cleanEmail(r.email);
+      const emailOk = isValidEmail(emailVal) && emailVal !== EXAMPLE_EMAIL;
+      if (!emailOk) editorInvalidCount++;
+      tdE.appendChild(mkInput({
+        value: r.email, row: idx, col: "email", invalid: !emailOk,
+        onInput: (v, fi) => { editorRows[idx].email = v; renderEditor(fi); }
+      }));
+
+      const tdA = document.createElement("td");
+      const tools = document.createElement("div");
+      tools.className = "row-tools";
+
+      const btnNorm = document.createElement("button");
+      btnNorm.type = "button";
+      btnNorm.className = "btn ghost mini";
+      btnNorm.textContent = "Normaliser";
+      btnNorm.addEventListener("click", () => {
+        editorRows[idx].username = cleanEmail(editorRows[idx].username);
+        editorRows[idx].email = cleanEmail(editorRows[idx].email);
+        editorRows[idx].firstname = cleanSpaces(editorRows[idx].firstname);
+        editorRows[idx].lastname = cleanSpaces(editorRows[idx].lastname);
+        renderEditor({ row: idx, col: "username", start: 999, end: 999 });
+        toast("Normalisé.");
+      });
+
+      const btnDel = document.createElement("button");
+      btnDel.type = "button";
+      btnDel.className = "btn ghost mini";
+      btnDel.textContent = "Supprimer";
+      btnDel.addEventListener("click", () => {
+        editorRows.splice(idx, 1);
+        const nextRow = Math.min(idx, editorRows.length - 1);
+        renderEditor(nextRow >= 0 ? { row: nextRow, col: "username", start: 0, end: 0 } : null);
+      });
+
+      tools.appendChild(btnNorm);
+      tools.appendChild(btnDel);
+      tdA.appendChild(tools);
+
+      tr.appendChild(tdU);
+      tr.appendChild(tdF);
+      tr.appendChild(tdL);
+      tr.appendChild(tdE);
+      tr.appendChild(tdA);
+
+      editorTbody.appendChild(tr);
+    });
+
+    editorStats.textContent = `${editorRows.length} ligne(s)`;
+
+    if (editorRows.length === 0){
+      editorMsg.innerHTML = `<div class="warnline">Aucune ligne dans l'éditeur. Ajoute une ligne ou ferme.</div>`;
+      saveEditorBtn.disabled = true;
+      return;
+    }
+
+    if (editorInvalidCount > 0){
+      saveEditorBtn.disabled = true;
+      editorMsg.innerHTML = `
+        <div class="badline">Impossible d'enregistrer: ${editorInvalidCount} champ(s) invalide(s).</div>
+        <div class="hint" style="margin-top:6px;">Corrige les champs en rouge, ou supprime les lignes concernées.</div>
+      `;
+    } else {
+      saveEditorBtn.disabled = false;
+      editorMsg.innerHTML = `<div class="hint">Tout est valide.</div>`;
+    }
+
+    restoreFocus(focusInfo);
+  }
+
+  function saveEditor(){
+    const next = [];
+    let localErrors = 0;
+
+    for (const r of editorRows){
+      const username = cleanEmail(r.username);
+      const email = cleanEmail(r.email);
+      const firstname = cleanSpaces(r.firstname);
+      const lastname = cleanSpaces(r.lastname);
+
+      if (username === EXAMPLE_EMAIL || email === EXAMPLE_EMAIL) continue;
+
+      if (!isValidEmail(username) || !isValidEmail(email) || !firstname || !lastname){
+        localErrors++;
+        continue;
+      }
+
+      next.push({
+        username,
+        password: FIXED_PASSWORD,
+        firstname,
+        lastname,
+        email,
+        profile_field_academie: FIXED_ACADEMIE
+      });
+    }
+
+    extractedRows = next;
+    errorCount = localErrors;
+
+    refreshDerivedOutputs();
+    closeEditor();
+    toast("Modifications enregistrées.");
+  }
+
+  editBtn.addEventListener("click", openEditor);
+  closeEditorBtn.addEventListener("click", closeEditor);
+  editorModal.addEventListener("click", (e) => { if (e.target === editorModal) closeEditor(); });
+  window.addEventListener("keydown", (e) => { if (e.key === "Escape" && editorModal.classList.contains("open")) closeEditor(); });
+
+  addRowBtn.addEventListener("click", () => {
+    editorRows.push({ username:"", firstname:"", lastname:"", email:"" });
+    renderEditor({ row: editorRows.length - 1, col: "username", start: 0, end: 0 });
+  });
+
+  saveEditorBtn.addEventListener("click", saveEditor);
+
+  async function handleFile(file){
+    if (!file) return;
+    if (!/\.docx$/i.test(file.name)){
+      toast("Veuillez charger un fichier .docx");
+      return;
+    }
+
+    resetAll();
+    loadedFile = file;
+
+    filePill.textContent = `Fichier chargé - ${file.name}`;
+    filePill.className = "pill good";
+
+    const arrayBuffer = await file.arrayBuffer();
+
+    let html = "";
+    try{
+      const resHtml = await mammoth.convertToHtml({ arrayBuffer });
+      html = resHtml.value || "";
+    }catch(err){
+      console.error(err);
+      toast("Erreur de lecture Word (HTML).");
+      return;
+    }
+
+    let text = "";
+    try{
+      const resText = await mammoth.extractRawText({ arrayBuffer });
+      text = (resText.value || "");
+    }catch(_){}
+
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, "text/html");
+
+    const tables = Array.from(doc.querySelectorAll("table"));
+    let lines = [];
+
+    if (tables.length > 0){
+      const lastTable = tables[tables.length - 1];
+      const rows = Array.from(lastTable.querySelectorAll("tr"));
+
+      for (const tr of rows){
+        const cells = Array.from(tr.querySelectorAll("td,th")).map(td => cleanSpaces(td.textContent));
+        if (!cells.length) continue;
+
+        if (cells.length === 1){
+          const v = cells[0];
+          if (v.includes(",") && v.includes("@")) lines.push(v);
+          continue;
+        }
+
+        const joined = cells.join(",");
+        if (joined.includes(",") && joined.includes("@")) lines.push(joined);
+      }
+    } else {
+      const rawLines = (text || "")
+        .split(/\r?\n/)
+        .map(l => cleanSpaces(l))
+        .filter(Boolean);
+
+      const candidates = rawLines.filter(l => l.includes(",") && l.includes("@") && l.split(",").length >= 6);
+      lines = candidates;
+    }
+
+    extractedRows = [];
+    skippedCount = 0;
+    errorCount = 0;
+
+    for (const line of lines){
+      const parsed = parseCandidateLine(line);
+      if (!parsed.ok){
+        if (parsed.skipped) skippedCount++;
+        else {
+          if (!line.includes("@") || line.split(",").length < 6) skippedCount++;
+          else errorCount++;
+        }
+        continue;
+      }
+      extractedRows.push(parsed.row);
+    }
+
+    if (extractedRows.length > 0){
+      const first = extractedRows[0];
+      if (first.email === EXAMPLE_EMAIL || first.username === EXAMPLE_EMAIL){
+        extractedRows.shift();
+        skippedCount++;
+      }
+    }
+
+    refreshDerivedOutputs();
+
+    if (extractedRows.length > 0){
+      wordPreview.style.display = "block";
+      csvPreview.style.display = "none";
+      wordPreviewBox.innerHTML = buildPreviewTable(extractedRows);
+    }
+
+    toast("Traitement terminé.");
+  }
+
+  dropZone.addEventListener("click", () => fileInput.click());
+  dropZone.addEventListener("dragover", (e) => { e.preventDefault(); dropZone.classList.add("dragover"); });
+  dropZone.addEventListener("dragleave", () => dropZone.classList.remove("dragover"));
+  dropZone.addEventListener("drop", (e) => {
+    e.preventDefault();
+    dropZone.classList.remove("dragover");
+    const f = e.dataTransfer.files?.[0];
+    if (f) handleFile(f);
+  });
+
+  fileInput.addEventListener("change", (e) => {
+    const f = e.target.files?.[0];
+    if (f) handleFile(f);
+  });
+
+  previewWordBtn.addEventListener("click", showWordPreview);
+  previewCsvBtn.addEventListener("click", showCsvPreview);
+  downloadBtn.addEventListener("click", downloadCsv);
+  mailBtn.addEventListener("click", copyMail);
+
+  resetAll();
+})();
+</script>
+</body>
+</html>
