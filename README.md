@@ -99,50 +99,61 @@ Copier-coller le code ci-dessous dans le fichier `index.html` à la racine du d�
     </footer>
   </div>
 
-  <script>
-    const owner = "pablocorr";
-    const repo = "polerd.github.io";
-    const path = "Automates";
+<script>
+  const owner = "pablocorr";
+  const repo = "polerd.github.io";
+  const rootPath = "Automates";
 
-    const apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${path}`;
-    const contentDiv = document.getElementById("content");
+  const contentDiv = document.getElementById("content");
+  let allHtmlFiles = [];
 
-    fetch(apiUrl)
-      .then(response => {
-        if (!response.ok) {
-          throw new Error("Erreur lors du chargement GitHub");
-        }
-        return response.json();
-      })
-      .then(files => {
-        const htmlFiles = files.filter(file =>
-          file.type === "file" && file.name.endsWith(".html")
-        );
+  async function fetchFolder(path) {
+    const url = `https://api.github.com/repos/${owner}/${repo}/contents/${path}`;
+    const response = await fetch(url);
+    if (!response.ok) return;
 
-        if (htmlFiles.length === 0) {
-          contentDiv.innerHTML = "<div class='error'>Aucun automate trouvé.</div>";
-          return;
-        }
+    const items = await response.json();
 
-        const buttonsContainer = document.createElement("div");
-        buttonsContainer.className = "buttons";
+    for (const item of items) {
+      if (item.type === "file" && item.name.endsWith(".html")) {
+        allHtmlFiles.push(item);
+      }
+      if (item.type === "dir") {
+        await fetchFolder(item.path);
+      }
+    }
+  }
 
-        htmlFiles.forEach(file => {
-          const link = document.createElement("a");
-          link.className = "btn";
-          link.href = `${path}/${file.name}`;
-          link.textContent = file.name.replace(".html", "");
-          buttonsContainer.appendChild(link);
-        });
+  async function loadAutomates() {
+    try {
+      await fetchFolder(rootPath);
 
-        contentDiv.replaceWith(buttonsContainer);
-      })
-      .catch(err => {
-        console.error(err);
-        contentDiv.innerHTML =
-          "<div class='error'>Impossible de charger la liste des automates.</div>";
+      if (allHtmlFiles.length === 0) {
+        contentDiv.innerHTML = "<div class='error'>Aucun automate trouvé.</div>";
+        return;
+      }
+
+      const buttonsContainer = document.createElement("div");
+      buttonsContainer.className = "buttons";
+
+      allHtmlFiles.forEach(file => {
+        const link = document.createElement("a");
+        link.className = "btn";
+        link.href = file.path;
+        link.textContent = file.name.replace(".html", "");
+        buttonsContainer.appendChild(link);
       });
-  </script>
+
+      contentDiv.replaceWith(buttonsContainer);
+    } catch (err) {
+      console.error(err);
+      contentDiv.innerHTML =
+        "<div class='error'>Erreur lors du chargement des automates.</div>";
+    }
+  }
+
+  loadAutomates();
+</script>
 
 </body>
 </html>
