@@ -19,7 +19,7 @@ body {
 }
 
 .container {
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
   background: white;
   border-radius: 12px;
@@ -84,7 +84,7 @@ td {
   text-align: center;
 }
 
-td:has(input) {
+td:has(input), td:has(select) {
   text-align: left;
 }
 
@@ -96,7 +96,7 @@ tr:hover {
   background: #f8f9fa;
 }
 
-input {
+input, select {
   width: 100%;
   padding: 10px 12px;
   border: 2px solid #e9ecef;
@@ -104,12 +104,17 @@ input {
   font-size: 14px;
   transition: all 0.3s ease;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: white;
 }
 
-input:focus {
+input:focus, select:focus {
   outline: none;
   border-color: #667eea;
   box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+select {
+  cursor: pointer;
 }
 
 button {
@@ -272,7 +277,7 @@ button {
     padding: 8px 6px;
   }
   
-  input {
+  input, select {
     font-size: 13px;
     padding: 8px 10px;
   }
@@ -284,7 +289,7 @@ button {
 <div class="container">
   <div class="header">
     <h2>Demande de création de compte e-GRETA CFA</h2>
-    <p>Générateur de fichier pour les nouvelles demandes de création de comptes Moodle</p>
+    <p>Générateur de fichier CSV pour les nouvelles demandes</p>
   </div>
 
   <div id="topbar">
@@ -305,7 +310,12 @@ button {
 </div>
 
 <script>
-let rows = [{ nom: "", prenom: "", email: "" }];
+let rows = [{
+  nom: "",
+  prenom: "",
+  email: "",
+  statut: "Stagiaire"
+}];
 
 // ---------- Utils ----------
 function cleanText(v) {
@@ -318,13 +328,12 @@ function normalizeEmail(email) {
   return e;
 }
 
-function isValidEmail(email) {
-  return /^[a-z0-9@.\-]+$/.test(email) &&
-         /^[^@]+@[^@]+\.[^@]+$/.test(email);
-}
-
 function hasInvalidEmailChars(email) {
   return /[^a-z0-9@.\-]/.test(email);
+}
+
+function isValidEmail(email) {
+  return /^[^@]+@[^@]+\.[^@]+$/.test(email);
 }
 
 function nowFilename() {
@@ -356,6 +365,7 @@ function renderEditor(focusInfo = null) {
       <th>Nom *</th>
       <th>Prénom *</th>
       <th>Adresse mail *</th>
+      <th>Statut *</th>
       <th>Actions</th>
     </tr>
   `;
@@ -367,6 +377,12 @@ function renderEditor(focusInfo = null) {
       <td><input value="${r.nom}" data-i="${i}" data-f="nom"></td>
       <td><input value="${r.prenom}" data-i="${i}" data-f="prenom"></td>
       <td><input value="${r.email}" data-i="${i}" data-f="email"></td>
+      <td>
+        <select data-i="${i}" data-f="statut">
+          <option value="Stagiaire" ${r.statut === "Stagiaire" ? "selected" : ""}>Stagiaire</option>
+          <option value="Equipe pédagogique" ${r.statut === "Equipe pédagogique" ? "selected" : ""}>Formateur</option>
+        </select>
+      </td>
       <td class="actions">
         <button onclick="addRowAt(${i})">+</button>
         <button onclick="removeRowAt(${i})">−</button>
@@ -377,8 +393,13 @@ function renderEditor(focusInfo = null) {
 
   container.appendChild(table);
 
-  container.querySelectorAll("input").forEach(input => {
-    input.addEventListener("input", e => {
+  container.querySelectorAll("input, select").forEach(el => {
+    el.addEventListener("input", e => {
+      const i = e.target.dataset.i;
+      const f = e.target.dataset.f;
+      rows[i][f] = e.target.value;
+    });
+    el.addEventListener("change", e => {
       const i = e.target.dataset.i;
       const f = e.target.dataset.f;
       rows[i][f] = e.target.value;
@@ -387,16 +408,16 @@ function renderEditor(focusInfo = null) {
 
   if (focusInfo) {
     const el = document.querySelector(
-      `input[data-i="${focusInfo.i}"][data-f="${focusInfo.f}"]`
+      `[data-i="${focusInfo.i}"][data-f="${focusInfo.f}"]`
     );
-    if (el) {
+    if (el && el.setSelectionRange) {
       el.focus();
       el.setSelectionRange(focusInfo.pos, focusInfo.pos);
     }
   }
 }
 
-// ---------- Row actions ----------
+// ---------- Validation ----------
 function validateRow(index) {
   const r = rows[index];
   const nom = cleanText(r.nom);
@@ -409,15 +430,12 @@ function validateRow(index) {
   }
 
   if (hasInvalidEmailChars(email)) {
-    alert(
-      `Ligne ${index + 1} : l'adresse mail contient des caractères non autorisés.\n` +
-      "Seuls les lettres non accentuées, chiffres, @, . et - sont autorisés."
-    );
+    alert(`Ligne ${index + 1} : caractères non autorisés dans l'adresse mail.`);
     return false;
   }
 
   if (!isValidEmail(email)) {
-    alert(`Ligne ${index + 1} : l'adresse mail n'est pas valide.`);
+    alert(`Ligne ${index + 1} : adresse mail invalide.`);
     return false;
   }
 
@@ -425,10 +443,16 @@ function validateRow(index) {
   return true;
 }
 
+// ---------- Row actions ----------
 function addRowAt(index) {
   if (!validateRow(index)) return;
   const f = saveFocus();
-  rows.splice(index + 1, 0, { nom: "", prenom: "", email: "" });
+  rows.splice(index + 1, 0, {
+    nom: "",
+    prenom: "",
+    email: "",
+    statut: "Stagiaire"
+  });
   renderEditor(f);
 }
 
@@ -439,18 +463,18 @@ function removeRowAt(index) {
   renderEditor(f);
 }
 
-// ---------- Finish / Preview ----------
+// ---------- Finish ----------
 function finish() {
   for (let i = 0; i < rows.length; i++) {
     if (!validateRow(i)) return;
   }
 
   let table =
-    "N° | Nom | Prénom | Adresse mail\r\n" +
-    "---|-----|--------|-------------------------\r\n";
+    "N° | Nom | Prénom | Adresse mail | Statut\r\n" +
+    "---|-----|--------|--------------|--------\r\n";
 
   rows.forEach((r, i) => {
-    table += `${i + 1} | ${cleanText(r.nom)} | ${cleanText(r.prenom)} | ${normalizeEmail(r.email)}\r\n`;
+    table += `${i + 1} | ${cleanText(r.nom)} | ${cleanText(r.prenom)} | ${normalizeEmail(r.email)} | ${r.statut}\r\n`;
   });
 
   let html = "<h3>Aperçu</h3><pre>" + table + "</pre>";
@@ -471,10 +495,12 @@ function finish() {
 
 // ---------- CSV ----------
 function generateCSV() {
-  let csv = "username;password;firstname;lastname;email;profile_field_academie\n";
+  let csv =
+    "username;password;firstname;lastname;email;profile_field_academie;profile_field_statut\n";
+
   rows.forEach(r => {
     const email = normalizeEmail(r.email);
-    csv += `${email};1234*;${cleanText(r.prenom)};${cleanText(r.nom)};${email};Bordeaux\n`;
+    csv += `${email};1234*;${cleanText(r.prenom)};${cleanText(r.nom)};${email};Bordeaux;${r.statut}\n`;
   });
   return csv;
 }
@@ -490,11 +516,11 @@ function downloadCSV() {
 // ---------- Mail ----------
 function sendMail() {
   let table =
-    "N° | Nom | Prénom | Adresse mail\r\n" +
-    "---|-----|--------|-------------------------\r\n";
+    "N° | Nom | Prénom | Adresse mail | Statut\r\n" +
+    "---|-----|--------|--------------|--------\r\n";
 
   rows.forEach((r, i) => {
-    table += `${i + 1} | ${cleanText(r.nom)} | ${cleanText(r.prenom)} | ${normalizeEmail(r.email)}\r\n`;
+    table += `${i + 1} | ${cleanText(r.nom)} | ${cleanText(r.prenom)} | ${normalizeEmail(r.email)} | ${r.statut}\r\n`;
   });
 
   const subject = encodeURIComponent("Demande de création de compte e-GRETA-CFA");
@@ -513,7 +539,12 @@ function sendMail() {
 // ---------- Reset ----------
 function resetAll() {
   if (confirm("Êtes-vous sûr de vouloir tout supprimer ?")) {
-    rows = [{ nom: "", prenom: "", email: "" }];
+    rows = [{
+      nom: "",
+      prenom: "",
+      email: "",
+      statut: "Stagiaire"
+    }];
     document.getElementById("preview").innerHTML = "";
     renderEditor();
   }
