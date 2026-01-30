@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Demande e-GRETA CFA - Générateur CSV</title>
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
+  padding: 20px;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+}
+
+.header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 30px;
+  text-align: center;
+}
+
+.header h2 {
+  font-size: 28px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.header p {
+  font-size: 14px;
+  opacity: 0.9;
+}
+
+#topbar {
+  display: flex;
+  justify-content: flex-end;
+  padding: 20px 30px;
+  background: #f8f9fa;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.content {
+  padding: 30px;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+  margin-bottom: 20px;
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+th {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 14px 12px;
+  text-align: center;
+  font-weight: 600;
+  font-size: 14px;
+  letter-spacing: 0.3px;
+}
+
+td {
+  padding: 12px;
+  border-bottom: 1px solid #e9ecef;
+  vertical-align: middle;
+  text-align: center;
+}
+
+td:has(input) {
+  text-align: left;
+}
+
+tr:last-child td {
+  border-bottom: none;
+}
+
+tr:hover {
+  background: #f8f9fa;
+}
+
+input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 2px solid #e9ecef;
+  border-radius: 6px;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+input:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+#topbar button {
+  background: #dc3545;
+  color: white;
+  padding: 10px 24px;
+}
+
+#topbar button:hover {
+  background: #c82333;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+}
+
+.actions button {
+  font-size: 18px;
+  padding: 6px 12px;
+  margin: 0 2px;
+  min-width: 36px;
+}
+
+.actions button:first-child {
+  background: #28a745;
+  color: white;
+}
+
+.actions button:first-child:hover {
+  background: #218838;
+  transform: scale(1.05);
+}
+
+.actions button:last-child {
+  background: #dc3545;
+  color: white;
+}
+
+.actions button:last-child:hover {
+  background: #c82333;
+  transform: scale(1.05);
+}
+
+.finish-button {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 14px 32px;
+  font-size: 16px;
+  display: block;
+  margin: 0 auto;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+.finish-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+}
+
+#preview {
+  border: 2px solid #e9ecef;
+  padding: 25px;
+  margin-top: 30px;
+  background: #f8f9fa;
+  border-radius: 8px;
+}
+
+#preview h3 {
+  color: #667eea;
+  margin-bottom: 15px;
+  font-size: 22px;
+}
+
+#preview pre {
+  background: white;
+  padding: 15px;
+  border-radius: 6px;
+  border-left: 4px solid #667eea;
+  overflow-x: auto;
+  font-family: 'Courier New', monospace;
+  font-size: 13px;
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
+
+#preview button {
+  background: #28a745;
+  color: white;
+  padding: 12px 28px;
+  margin: 8px 8px 8px 0;
+  font-size: 15px;
+}
+
+#preview button:hover {
+  background: #218838;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+}
+
+#preview button:last-of-type {
+  background: #007bff;
+}
+
+#preview button:last-of-type:hover {
+  background: #0056b3;
+  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+}
+
+.note {
+  font-size: 13px;
+  color: #6c757d;
+  margin-top: 6px;
+  margin-bottom: 12px;
+  font-style: italic;
+  padding-left: 4px;
+}
+
+.required-note {
+  font-size: 13px;
+  color: #6c757d;
+  margin-bottom: 15px;
+  padding: 10px;
+  background: #fff3cd;
+  border-left: 4px solid #ffc107;
+  border-radius: 4px;
+}
+
+.row-number {
+  font-weight: 600;
+  color: #667eea;
+}
+
+@media (max-width: 768px) {
+  .container {
+    margin: 0;
+    border-radius: 0;
+  }
+  
+  .header h2 {
+    font-size: 22px;
+  }
+  
+  .content {
+    padding: 20px;
+  }
+  
+  table {
+    font-size: 13px;
+  }
+  
+  th, td {
+    padding: 8px 6px;
+  }
+  
+  input {
+    font-size: 13px;
+    padding: 8px 10px;
+  }
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="header">
+    <h2>Demande de création de compte e-GRETA CFA</h2>
+    <p>Générateur de fichier pour les nouvelles demandes de création de comptes Moodle</p>
+  </div>
+
+  <div id="topbar">
+    <button onclick="resetAll()">🔄 Réinitialiser</button>
+  </div>
+
+  <div class="content">
+    <div class="required-note">
+      ⚠️ Tous les champs marqués d'un astérisque (*) sont obligatoires
+    </div>
+
+    <div id="editor"></div>
+
+    <button class="finish-button" onclick="finish()">✓ Terminer et générer le fichier</button>
+
+    <div id="preview"></div>
+  </div>
+</div>
+
+<script>
+let rows = [{ nom: "", prenom: "", email: "" }];
+
+// ---------- Utils ----------
+function cleanText(v) {
+  return v.trim();
+}
+
+function normalizeEmail(email) {
+  let e = email.toLowerCase().replace(/\s+/g, "");
+  e = e.replace(".cpm", ".com");
+  return e;
+}
+
+function isValidEmail(email) {
+  return /^[a-z0-9@.\-]+$/.test(email) &&
+         /^[^@]+@[^@]+\.[^@]+$/.test(email);
+}
+
+function hasInvalidEmailChars(email) {
+  return /[^a-z0-9@.\-]/.test(email);
+}
+
+function nowFilename() {
+  const d = new Date();
+  const pad = n => String(n).padStart(2, "0");
+  return `demande_egreta_${pad(d.getDate())}-${pad(d.getMonth()+1)}-${d.getFullYear()}_${pad(d.getHours())}${pad(d.getMinutes())}.csv`;
+}
+
+// ---------- Focus ----------
+function saveFocus() {
+  const el = document.activeElement;
+  if (!el || !el.dataset) return null;
+  return {
+    i: Number(el.dataset.i),
+    f: el.dataset.f,
+    pos: el.selectionStart
+  };
+}
+
+// ---------- Render ----------
+function renderEditor(focusInfo = null) {
+  const container = document.getElementById("editor");
+  container.innerHTML = "";
+
+  const table = document.createElement("table");
+  table.innerHTML = `
+    <tr>
+      <th>#</th>
+      <th>Nom *</th>
+      <th>Prénom *</th>
+      <th>Adresse mail *</th>
+      <th>Actions</th>
+    </tr>
+  `;
+
+  rows.forEach((r, i) => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td class="row-number">${i + 1}</td>
+      <td><input value="${r.nom}" data-i="${i}" data-f="nom"></td>
+      <td><input value="${r.prenom}" data-i="${i}" data-f="prenom"></td>
+      <td><input value="${r.email}" data-i="${i}" data-f="email"></td>
+      <td class="actions">
+        <button onclick="addRowAt(${i})">+</button>
+        <button onclick="removeRowAt(${i})">−</button>
+      </td>
+    `;
+    table.appendChild(tr);
+  });
+
+  container.appendChild(table);
+
+  container.querySelectorAll("input").forEach(input => {
+    input.addEventListener("input", e => {
+      const i = e.target.dataset.i;
+      const f = e.target.dataset.f;
+      rows[i][f] = e.target.value;
+    });
+  });
+
+  if (focusInfo) {
+    const el = document.querySelector(
+      `input[data-i="${focusInfo.i}"][data-f="${focusInfo.f}"]`
+    );
+    if (el) {
+      el.focus();
+      el.setSelectionRange(focusInfo.pos, focusInfo.pos);
+    }
+  }
+}
+
+// ---------- Row actions ----------
+function validateRow(index) {
+  const r = rows[index];
+  const nom = cleanText(r.nom);
+  const prenom = cleanText(r.prenom);
+  const email = normalizeEmail(r.email);
+
+  if (!nom || !prenom || !email) {
+    alert(`Ligne ${index + 1} : tous les champs sont obligatoires.`);
+    return false;
+  }
+
+  if (hasInvalidEmailChars(email)) {
+    alert(
+      `Ligne ${index + 1} : l'adresse mail contient des caractères non autorisés.\n` +
+      "Seuls les lettres non accentuées, chiffres, @, . et - sont autorisés."
+    );
+    return false;
+  }
+
+  if (!isValidEmail(email)) {
+    alert(`Ligne ${index + 1} : l'adresse mail n'est pas valide.`);
+    return false;
+  }
+
+  rows[index].email = email;
+  return true;
+}
+
+function addRowAt(index) {
+  if (!validateRow(index)) return;
+  const f = saveFocus();
+  rows.splice(index + 1, 0, { nom: "", prenom: "", email: "" });
+  renderEditor(f);
+}
+
+function removeRowAt(index) {
+  if (rows.length === 1) return;
+  const f = saveFocus();
+  rows.splice(index, 1);
+  renderEditor(f);
+}
+
+// ---------- Finish / Preview ----------
+function finish() {
+  for (let i = 0; i < rows.length; i++) {
+    if (!validateRow(i)) return;
+  }
+
+  let table =
+    "N° | Nom | Prénom | Adresse mail\r\n" +
+    "---|-----|--------|-------------------------\r\n";
+
+  rows.forEach((r, i) => {
+    table += `${i + 1} | ${cleanText(r.nom)} | ${cleanText(r.prenom)} | ${normalizeEmail(r.email)}\r\n`;
+  });
+
+  let html = "<h3>Aperçu</h3><pre>" + table + "</pre>";
+
+  html += `
+    <button onclick="downloadCSV()">📥 Télécharger le CSV</button>
+    <div class="note">À joindre dans le mail après avoir cliqué sur "Envoyer".</div>
+    <br>
+    <button onclick="sendMail()">📧 Envoyer par email</button>
+    <div class="note">
+      Si ce bouton n'ouvre pas une boîte de dialogue de mail, envoyez directement un mail à l'adresse
+      polerd@ac-bordeaux.fr avec le fichier téléchargé précédemment en pièce-jointe.
+    </div>
+  `;
+
+  document.getElementById("preview").innerHTML = html;
+}
+
+// ---------- CSV ----------
+function generateCSV() {
+  let csv = "username;password;firstname;lastname;email;profile_field_academie\n";
+  rows.forEach(r => {
+    const email = normalizeEmail(r.email);
+    csv += `${email};1234*;${cleanText(r.prenom)};${cleanText(r.nom)};${email};Bordeaux\n`;
+  });
+  return csv;
+}
+
+function downloadCSV() {
+  const blob = new Blob([generateCSV()], { type: "text/csv;charset=utf-8;" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = nowFilename();
+  a.click();
+}
+
+// ---------- Mail ----------
+function sendMail() {
+  let table =
+    "N° | Nom | Prénom | Adresse mail\r\n" +
+    "---|-----|--------|-------------------------\r\n";
+
+  rows.forEach((r, i) => {
+    table += `${i + 1} | ${cleanText(r.nom)} | ${cleanText(r.prenom)} | ${normalizeEmail(r.email)}\r\n`;
+  });
+
+  const subject = encodeURIComponent("Demande de création de compte e-GRETA-CFA");
+  const body = encodeURIComponent(
+    "Bonjour,\r\n\r\n" +
+    "Voici une demande de création de compte(s) e-GRETA CFA.\r\n\r\n" +
+    table + "\r\n" +
+    "Vous trouverez ci-joint le fichier .csv correspondant.\r\n\r\n" +
+    "Cordialement,"
+  );
+
+  window.location.href =
+    `mailto:polerd@ac-bordeaux.fr?subject=${subject}&body=${body}`;
+}
+
+// ---------- Reset ----------
+function resetAll() {
+  if (confirm("Êtes-vous sûr de vouloir tout supprimer ?")) {
+    rows = [{ nom: "", prenom: "", email: "" }];
+    document.getElementById("preview").innerHTML = "";
+    renderEditor();
+  }
+}
+
+// Init
+renderEditor();
+</script>
+
+</body>
+</html>
