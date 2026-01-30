@@ -137,7 +137,8 @@ Copier-coller le code ci-dessous dans le fichier `index.html` √† la racine du d√
 
         contentDiv.replaceWith(buttonsContainer);
       })
-      .catch(() => {
+      .catch(err => {
+        console.error(err);
         contentDiv.innerHTML =
           "<div class='error'>Impossible de charger la liste des automates.</div>";
       });
@@ -145,3 +146,4 @@ Copier-coller le code ci-dessous dans le fichier `index.html` √† la racine du d√
 
 </body>
 </html>
+
