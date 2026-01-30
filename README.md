@@ -101,7 +101,7 @@ Copier-coller le code ci-dessous dans le fichier `index.html` √† la racine du d√
 
 <script>
   const repoOwner = "pablocorr";
-  const repoName = "polerd.github.io";
+  const repoName = "pablocorr.github.io";
   const branch = "main";
   const rootFolder = "Automates";
 
