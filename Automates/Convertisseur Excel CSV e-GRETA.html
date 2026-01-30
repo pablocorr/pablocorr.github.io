@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Convertisseur Excel vers CSV</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            padding: 20px;
+            transition: background 0.3s ease;
+        }
+
+        body.light {
+            background: linear-gradient(135deg, #c6ffdd 0%, #fbd786 50%, #f7797d 100%);
+        }
+
+        body.dark {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        body.dark .container {
+            background: rgba(30, 30, 30, 0.95);
+            color: #e0e0e0;
+        }
+
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        body.dark .theme-toggle {
+            background: rgba(50, 50, 50, 0.9);
+            color: #fff;
+        }
+
+        .theme-toggle:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+        }
+
+        body.dark h1 {
+            color: #fff;
+        }
+
+        .upload-zone {
+            border: 3px dashed #666;
+            border-radius: 15px;
+            padding: 60px 20px;
+            text-align: center;
+            margin-bottom: 30px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.5);
+        }
+
+        body.dark .upload-zone {
+            background: rgba(50, 50, 50, 0.5);
+            border-color: #888;
+        }
+
+        .upload-zone:hover {
+            border-color: #f7797d;
+            background: rgba(247, 121, 125, 0.1);
+        }
+
+        .upload-zone.drag-over {
+            border-color: #fbd786;
+            background: rgba(251, 215, 134, 0.2);
+        }
+
+        .upload-zone p {
+            font-size: 1.2em;
+            color: #555;
+        }
+
+        body.dark .upload-zone p {
+            color: #ccc;
+        }
+
+        .file-info {
+            text-align: center;
+            margin: 20px 0;
+            font-weight: 600;
+            color: #333;
+        }
+
+        body.dark .file-info {
+            color: #fff;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin: 30px 0;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            color: white;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #ee0979 0%, #ff6a00 100%);
+            color: white;
+        }
+
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 20px 0;
+            font-size: 16px;
+        }
+
+        .checkbox-container input {
+            margin-right: 10px;
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .error-counter {
+            text-align: center;
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .error-counter.has-errors {
+            background: rgba(255, 0, 0, 0.1);
+            color: #d00;
+            border: 2px solid #d00;
+        }
+
+        .error-counter.no-errors {
+            background: rgba(0, 255, 0, 0.1);
+            color: #0a0;
+            border: 2px solid #0a0;
+        }
+
+        body.dark .error-counter.has-errors {
+            background: rgba(255, 0, 0, 0.2);
+        }
+
+        body.dark .error-counter.no-errors {
+            background: rgba(0, 255, 0, 0.2);
+        }
+
+        .preview-section {
+            margin-top: 30px;
+            display: none;
+        }
+
+        .preview-section.active {
+            display: block;
+        }
+
+        .preview-title {
+            font-size: 1.5em;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        body.dark .preview-title {
+            color: #fff;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        body.dark table {
+            background: #2a2a2a;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        body.dark th, body.dark td {
+            border-bottom: 1px solid #444;
+        }
+
+        th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-weight: 600;
+        }
+
+        tr:hover {
+            background: rgba(102, 126, 234, 0.1);
+        }
+
+        body.dark tr:hover {
+            background: rgba(102, 126, 234, 0.2);
+        }
+
+        .error-row {
+            background: rgba(255, 0, 0, 0.15) !important;
+        }
+
+        body.dark .error-row {
+            background: rgba(255, 0, 0, 0.25) !important;
+        }
+
+        .notification {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 10px;
+            background: #4caf50;
+            color: white;
+            font-weight: 600;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            animation: slideIn 0.3s ease;
+            z-index: 1000;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        #fileInput {
+            display: none;
+        }
+    </style>
+</head>
+<body class="light">
+    <button class="theme-toggle" onclick="toggleTheme()">🌙 Thème</button>
+
+    <div class="container">
+        <h1>📊 Convertisseur Excel vers CSV</h1>
+
+        <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
+            <p>📁 Glissez-déposez votre fichier Excel ici<br>ou cliquez pour sélectionner</p>
+        </div>
+        <input type="file" id="fileInput" accept=".xlsx,.xls">
+
+        <div class="file-info" id="fileInfo"></div>
+
+        <div class="checkbox-container">
+            <input type="checkbox" id="strictMode">
+            <label for="strictMode">Mode strict (refuser les fichiers incomplets)</label>
+        </div>
+
+        <div class="error-counter" id="errorCounter" style="display: none;"></div>
+
+        <div class="controls">
+            <button class="btn btn-primary" id="btnPreviewExcel" onclick="showExcelPreview()" disabled>👁️ Aperçu Excel</button>
+            <button class="btn btn-secondary" id="btnPreviewCSV" onclick="showCSVPreview()" disabled>👁️ Aperçu CSV</button>
+            <button class="btn btn-success" id="btnDownload" onclick="downloadCSV()" disabled>💾 Télécharger CSV</button>
+            <button class="btn btn-warning" id="btnMail" onclick="copyMailToClipboard()" disabled>✉️ Écrire mail</button>
+            <button class="btn btn-danger" id="btnReset" onclick="resetAll()">🔄 Réinitialiser</button>
+        </div>
+
+        <div class="preview-section" id="excelPreview">
+            <h2 class="preview-title">📄 Aperçu du fichier Excel</h2>
+            <div class="table-container" id="excelTableContainer"></div>
+        </div>
+
+        <div class="preview-section" id="csvPreview">
+            <h2 class="preview-title">📋 Aperçu du fichier CSV</h2>
+            <div class="table-container" id="csvTableContainer"></div>
+        </div>
+    </div>
+
+    <script>
+        let excelData = null;
+        let csvData = null;
+        let errorRows = [];
+
+        // Gestion du thème
+        function toggleTheme() {
+            document.body.classList.toggle('light');
+            document.body.classList.toggle('dark');
+        }
+
+        // Gestion du drag & drop
+        const uploadZone = document.getElementById('uploadZone');
+        const fileInput = document.getElementById('fileInput');
+
+        uploadZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadZone.classList.add('drag-over');
+        });
+
+        uploadZone.addEventListener('dragleave', () => {
+            uploadZone.classList.remove('drag-over');
+        });
+
+        uploadZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadZone.classList.remove('drag-over');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFile(files[0]);
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFile(e.target.files[0]);
+            }
+        });
+
+        function handleFile(file) {
+            if (!file.name.match(/\.(xlsx|xls)$/)) {
+                showNotification('❌ Veuillez sélectionner un fichier Excel (.xlsx ou .xls)', '#f44336');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                    const jsonData = XLSX.utils.sheet_to_json(firstSheet);
+
+                    processExcelData(jsonData, file.name);
+                } catch (error) {
+                    showNotification('❌ Erreur lors de la lecture du fichier : ' + error.message, '#f44336');
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        function processExcelData(data, fileName) {
+            if (data.length === 0) {
+                showNotification('❌ Le fichier Excel est vide', '#f44336');
+                return;
+            }
+
+            // Vérifier les colonnes
+            const requiredColumns = ['Nom', 'Prénom', 'Adresse mail'];
+            const firstRow = data[0];
+            const hasAllColumns = requiredColumns.every(col => col in firstRow);
+
+            const strictMode = document.getElementById('strictMode').checked;
+
+            if (strictMode && !hasAllColumns) {
+                showNotification('❌ Mode strict : Le fichier doit contenir les colonnes : Nom, Prénom, Adresse mail', '#f44336');
+                return;
+            }
+
+            excelData = data;
+            errorRows = [];
+
+            // Vérifier les erreurs
+            data.forEach((row, index) => {
+                const hasError = !row['Nom'] || !row['Prénom'] || !row['Adresse mail'];
+                if (hasError) {
+                    errorRows.push(index);
+                }
+            });
+
+            // Générer les données CSV
+            csvData = data.map(row => {
+                const nom = (row['Nom'] || '').toString().trim();
+                const prenom = (row['Prénom'] || '').toString().trim();
+                const email = (row['Adresse mail'] || '').toString().trim().toLowerCase();
+
+                return {
+                    username: email,
+                    password: '1234*',
+                    firstname: prenom,
+                    lastname: nom,
+                    email: email,
+                    profile_field_academie: 'Bordeaux'
+                };
+            });
+
+            // Afficher les informations
+            document.getElementById('fileInfo').textContent = `✅ Fichier chargé : ${fileName} (${data.length} ligne(s))`;
+
+            // Afficher le compteur d'erreurs
+            const errorCounter = document.getElementById('errorCounter');
+            errorCounter.style.display = 'block';
+            if (errorRows.length > 0) {
+                errorCounter.className = 'error-counter has-errors';
+                errorCounter.textContent = `⚠️ ${errorRows.length} ligne(s) avec données manquantes`;
+            } else {
+                errorCounter.className = 'error-counter no-errors';
+                errorCounter.textContent = '✅ Aucune erreur détectée';
+            }
+
+            // Activer les boutons
+            document.getElementById('btnPreviewExcel').disabled = false;
+            document.getElementById('btnPreviewCSV').disabled = false;
+            document.getElementById('btnDownload').disabled = false;
+            document.getElementById('btnMail').disabled = false;
+
+            showNotification('✅ Fichier traité avec succès !', '#4caf50');
+        }
+
+        function showExcelPreview() {
+            if (!excelData) return;
+
+            const container = document.getElementById('excelTableContainer');
+            let html = '<table><thead><tr><th>Ligne</th><th>Nom</th><th>Prénom</th><th>Adresse mail</th></tr></thead><tbody>';
+
+            excelData.forEach((row, index) => {
+                const isError = errorRows.includes(index);
+                const rowClass = isError ? 'error-row' : '';
+                html += `<tr class="${rowClass}">
+                    <td>${index + 1}</td>
+                    <td>${row['Nom'] || '<em>Manquant</em>'}</td>
+                    <td>${row['Prénom'] || '<em>Manquant</em>'}</td>
+                    <td>${row['Adresse mail'] || '<em>Manquant</em>'}</td>
+                </tr>`;
+            });
+
+            html += '</tbody></table>';
+            container.innerHTML = html;
+
+            document.getElementById('excelPreview').classList.add('active');
+            document.getElementById('csvPreview').classList.remove('active');
+        }
+
+        function showCSVPreview() {
+            if (!csvData) return;
+
+            const container = document.getElementById('csvTableContainer');
+            let html = '<table><thead><tr><th>Ligne</th><th>username</th><th>password</th><th>firstname</th><th>lastname</th><th>email</th><th>profile_field_academie</th></tr></thead><tbody>';
+
+            csvData.forEach((row, index) => {
+                html += `<tr>
+                    <td>${index + 1}</td>
+                    <td>${row.username}</td>
+                    <td>${row.password}</td>
+                    <td>${row.firstname}</td>
+                    <td>${row.lastname}</td>
+                    <td>${row.email}</td>
+                    <td>${row.profile_field_academie}</td>
+                </tr>`;
+            });
+
+            html += '</tbody></table>';
+            container.innerHTML = html;
+
+            document.getElementById('csvPreview').classList.add('active');
+            document.getElementById('excelPreview').classList.remove('active');
+        }
+
+        function downloadCSV() {
+            if (!csvData) return;
+
+            let csvContent = 'username;password;firstname;lastname;email;profile_field_academie\n';
+            
+            csvData.forEach(row => {
+                csvContent += `${row.username};${row.password};${row.firstname};${row.lastname};${row.email};${row.profile_field_academie}\n`;
+            });
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            
+            link.setAttribute('href', url);
+            link.setAttribute('download', 'utilisateurs.csv');
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            showNotification('✅ Fichier CSV téléchargé !', '#4caf50');
+        }
+
+        function copyMailToClipboard() {
+            if (!csvData) return;
+
+            let tableHTML = '<table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse; font-family: Arial, sans-serif;">';
+            tableHTML += '<thead><tr style="background-color: #667eea; color: white;">';
+            tableHTML += '<th>Nom</th><th>Prénom</th><th>Identifiant</th><th>Mot de passe</th>';
+            tableHTML += '</tr></thead><tbody>';
+
+            csvData.forEach(row => {
+                tableHTML += '<tr>';
+                tableHTML += `<td>${row.lastname}</td>`;
+                tableHTML += `<td>${row.firstname}</td>`;
+                tableHTML += `<td>${row.email}</td>`;
+                tableHTML += `<td>${row.password}</td>`;
+                tableHTML += '</tr>';
+            });
+
+            tableHTML += '</tbody></table>';
+
+            const mailContent = `<p>Bonjour,</p>
+<p>Votre demande a bien été traitée :</p>
+${tableHTML}
+<p>Cordialement,</p>`;
+
+            // Créer un élément temporaire pour copier le HTML
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = mailContent;
+            tempDiv.style.position = 'absolute';
+            tempDiv.style.left = '-9999px';
+            document.body.appendChild(tempDiv);
+
+            // Sélectionner et copier
+            const range = document.createRange();
+            range.selectNode(tempDiv);
+            window.getSelection().removeAllRanges();
+            window.getSelection().addRange(range);
+
+            try {
+                document.execCommand('copy');
+                showNotification('✅ Contenu du mail copié dans le presse-papier !', '#4caf50');
+            } catch (err) {
+                showNotification('❌ Erreur lors de la copie : ' + err.message, '#f44336');
+            }
+
+            window.getSelection().removeAllRanges();
+            document.body.removeChild(tempDiv);
+        }
+
+        function resetAll() {
+            excelData = null;
+            csvData = null;
+            errorRows = [];
+
+            document.getElementById('fileInput').value = '';
+            document.getElementById('fileInfo').textContent = '';
+            document.getElementById('errorCounter').style.display = 'none';
+            
+            document.getElementById('btnPreviewExcel').disabled = true;
+            document.getElementById('btnPreviewCSV').disabled = true;
+            document.getElementById('btnDownload').disabled = true;
+            document.getElementById('btnMail').disabled = true;
+
+            document.getElementById('excelPreview').classList.remove('active');
+            document.getElementById('csvPreview').classList.remove('active');
+
+            document.getElementById('strictMode').checked = false;
+
+            showNotification('🔄 Application réinitialisée', '#2196f3');
+        }
+
+        function showNotification(message, color) {
+            const notification = document.createElement('div');
+            notification.className = 'notification';
+            notification.textContent = message;
+            notification.style.background = color;
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.style.animation = 'slideIn 0.3s ease reverse';
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 300);
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
