@@ -535,9 +535,11 @@
       border-radius:var(--radiusSmall);
       padding:16px 18px;
       min-width: 160px;
+      flex: 1;
       transition: all 0.3s ease;
       position: relative;
       overflow: hidden;
+      cursor: pointer;
     }
     
     .kpi .box::before {
@@ -560,6 +562,10 @@
     
     .kpi .box:hover::before {
       opacity: 1;
+    }
+    
+    .kpi .box.clickable:active {
+      transform: translateY(-1px);
     }
     
     .kpi .box .n{
@@ -597,7 +603,7 @@
       transform: rotate(180deg) scale(1.1);
     }
     
-    /* Modal Editor Styles */
+    /* Modal Styles */
     .modal {
       position: fixed;
       top: 0;
@@ -618,7 +624,7 @@
       display: flex;
     }
     
-    .modal-content {
+    .modal-card {
       background: var(--card);
       border: 1px solid var(--border);
       border-radius: var(--radius);
@@ -632,29 +638,40 @@
       overflow: hidden;
     }
     
-    .modal-header {
+    .modal-hd {
       padding: 20px 24px;
       border-bottom: 1px solid var(--border);
       display: flex;
       align-items: center;
       justify-content: space-between;
       background: linear-gradient(180deg, rgba(102,126,234,.04), transparent);
+      gap: 16px;
     }
     
-    .modal-header h2 {
+    .modal-hd .left {
+      flex: 1;
+    }
+    
+    .modal-hd .h {
       margin: 0;
       font-size: 20px;
       font-weight: 700;
       color: var(--text);
     }
     
-    .modal-body {
+    .modal-hd .s {
+      margin-top: 4px;
+      font-size: 14px;
+      color: var(--muted);
+    }
+    
+    .modal-bd {
       padding: 20px 24px;
       overflow-y: auto;
       flex: 1;
     }
     
-    .modal-footer {
+    .modal-ft {
       padding: 16px 24px;
       border-top: 1px solid var(--border);
       display: flex;
@@ -662,6 +679,13 @@
       justify-content: space-between;
       align-items: center;
       background: linear-gradient(180deg, transparent, rgba(102,126,234,.02));
+      flex-wrap: wrap;
+    }
+    
+    .modal-actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
     }
     
     .field {
@@ -692,15 +716,7 @@
       box-shadow: 0 0 0 3px rgba(229, 62, 62, .15);
     }
     
-    .editor-table-wrap {
-      overflow: auto;
-      border: 1px solid var(--border);
-      border-radius: var(--radiusSmall);
-      max-height: 500px;
-      background: var(--card2);
-    }
-    
-    .editor-table-wrap table {
+    .editor-table {
       min-width: 900px;
     }
     
@@ -710,17 +726,10 @@
       flex-wrap: wrap;
     }
     
-    .editor-msg {
-      margin-top: 16px;
-      padding: 14px 16px;
-      border-radius: var(--radiusSmall);
-      font-size: 14px;
-      line-height: 1.5;
-    }
-    
     .hint {
       color: var(--muted);
       font-weight: 500;
+      font-size: 14px;
     }
     
     .warnline {
@@ -739,12 +748,6 @@
       background: rgba(229, 62, 62, 0.1);
       border-left: 3px solid var(--bad);
       border-radius: var(--radiusSmall);
-    }
-    
-    .editor-stats {
-      font-size: 14px;
-      color: var(--muted);
-      font-weight: 600;
     }
     
     /* Scrollbar personnalisée */
@@ -777,8 +780,8 @@
       .btn { flex: 1; justify-content: center; }
       .card .hd, .card .bd { padding: 16px 20px; }
       .kpi .box { min-width: 140px; }
-      .modal-content { max-height: 95vh; }
-      .modal-header, .modal-body, .modal-footer { padding: 16px 20px; }
+      .modal-card { max-height: 95vh; }
+      .modal-hd, .modal-bd, .modal-ft { padding: 16px 20px; }
     }
   </style>
 </head>
@@ -788,7 +791,7 @@
   <header>
     <div class="title">
       <h1>Word → CSV (GRETA)</h1>
-      <p>Convertisseur Word vers CSV pour e-GRETA</p>
+      <p>Convertisseur de candidats avec éditeur avancé</p>
     </div>
     <div class="top-actions">
       <button class="btn ghost" id="themeBtn">🌙</button>
@@ -822,11 +825,11 @@
             <div class="n" id="rowsOk">0</div>
             <div class="l">Lignes OK</div>
           </div>
-          <div class="box">
+          <div class="box clickable" id="rowsSkippedBox">
             <div class="n" id="rowsSkipped">0</div>
             <div class="l">Ignorées</div>
           </div>
-          <div class="box">
+          <div class="box clickable" id="rowsErrorsBox">
             <div class="n" id="rowsErrors">0</div>
             <div class="l">Erreurs</div>
           </div>
@@ -867,20 +870,19 @@
 </div>
 
 <!-- Modal Editor -->
-<div class="modal" id="editorModal">
-  <div class="modal-content">
-    <div class="modal-header">
-      <h2>✏️ Éditeur de lignes</h2>
-      <button class="btn ghost mini" id="closeEditorBtn">✕ Fermer</button>
-    </div>
-    <div class="modal-body">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
-        <div class="editor-stats" id="editorStats"></div>
-        <button class="btn ghost mini" id="addRowBtn">➕ Ajouter une ligne</button>
+<div class="modal" id="editorModal" aria-hidden="true">
+  <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="editorTitle">
+    <div class="modal-hd">
+      <div class="left">
+        <div class="h" id="editorTitle">✏️ Éditeur de lignes</div>
+        <div class="s">Modifiez, normalisez ou supprimez les entrées</div>
       </div>
+      <button class="btn ghost mini" id="closeEditorBtn" type="button">✕ Fermer</button>
+    </div>
 
-      <div class="editor-table-wrap">
-        <table>
+    <div class="modal-bd">
+      <div class="table-wrap" style="max-height:unset;">
+        <table class="editor-table">
           <thead>
             <tr>
               <th>Identifiant (email)</th>
@@ -894,11 +896,51 @@
         </table>
       </div>
 
-      <div id="editorMsg" class="editor-msg"></div>
+      <div id="editorMsg" style="margin-top:16px;"></div>
     </div>
-    <div class="modal-footer">
-      <button class="btn ghost" id="closeEditorBtn2">Annuler</button>
-      <button class="btn" id="saveEditorBtn" disabled>💾 Enregistrer les modifications</button>
+
+    <div class="modal-ft">
+      <div class="hint" id="editorStats">0 ligne(s)</div>
+      <div class="modal-actions">
+        <button class="btn ghost" id="addRowBtn" type="button">➕ Ajouter une ligne</button>
+        <button class="btn" id="saveEditorBtn" type="button">💾 Enregistrer</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal details (ignored/errors) -->
+<div class="modal" id="detailsModal" aria-hidden="true">
+  <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="detailsTitle">
+    <div class="modal-hd">
+      <div class="left">
+        <div class="h" id="detailsTitle">Détail</div>
+        <div class="s" id="detailsSubtitle">-</div>
+      </div>
+      <button class="btn ghost mini" id="closeDetailsBtn" type="button">✕ Fermer</button>
+    </div>
+
+    <div class="modal-bd">
+      <div class="table-wrap" style="max-height:unset;">
+        <table class="editor-table" style="min-width:860px;">
+          <thead>
+            <tr>
+              <th style="width:70px;">#</th>
+              <th style="width:240px;">Raison</th>
+              <th>Ligne (brute)</th>
+            </tr>
+          </thead>
+          <tbody id="detailsTbody"></tbody>
+        </table>
+      </div>
+      <div id="detailsEmpty" class="hint" style="margin-top:10px; display:none;">Aucune ligne à afficher.</div>
+    </div>
+
+    <div class="modal-ft">
+      <div class="hint" id="detailsStats">0 ligne(s)</div>
+      <div class="modal-actions">
+        <button class="btn ghost" id="copyDetailsBtn" type="button">📋 Copier le détail</button>
+      </div>
     </div>
   </div>
 </div>
@@ -906,93 +948,80 @@
 <div class="toast" id="toast"></div>
 
 <script>
-(function(){
-  "use strict";
-
+(() => {
+  const CSV_HEADER = "username;password;firstname;lastname;email;profile_field_academie";
   const FIXED_PASSWORD = "1234*";
   const FIXED_ACADEMIE = "Bordeaux";
-  const CSV_HEADER = "username;password;firstname;lastname;email;profile_field_academie";
   const EXAMPLE_EMAIL_RAW = "michel.martin@greta-cfa-aquitaine.fr";
 
-  const dropZone = document.getElementById("dropZone");
+  // DOM
+  const themeBtn = document.getElementById("themeBtn");
+  const resetBtn = document.getElementById("resetBtn");
+
   const fileInput = document.getElementById("fileInput");
+  const dropZone = document.getElementById("dropZone");
   const filePill = document.getElementById("filePill");
-  const previewPill = document.getElementById("previewPill");
-  const wordPreview = document.getElementById("wordPreview");
-  const csvPreview = document.getElementById("csvPreview");
-  const wordPreviewBox = document.getElementById("wordPreviewBox");
-  const csvPreviewBox = document.getElementById("csvPreviewBox");
+
   const previewWordBtn = document.getElementById("previewWordBtn");
   const previewCsvBtn = document.getElementById("previewCsvBtn");
   const editBtn = document.getElementById("editBtn");
   const downloadBtn = document.getElementById("downloadBtn");
   const mailBtn = document.getElementById("mailBtn");
-  const resetBtn = document.getElementById("resetBtn");
-  const themeBtn = document.getElementById("themeBtn");
-  const toastEl = document.getElementById("toast");
+
+  const previewPill = document.getElementById("previewPill");
+  const wordPreview = document.getElementById("wordPreview");
+  const csvPreview = document.getElementById("csvPreview");
+  const wordPreviewBox = document.getElementById("wordPreviewBox");
+  const csvPreviewBox = document.getElementById("csvPreviewBox");
 
   const rowsOkEl = document.getElementById("rowsOk");
   const rowsSkippedEl = document.getElementById("rowsSkipped");
   const rowsErrorsEl = document.getElementById("rowsErrors");
 
+  const rowsSkippedBox = document.getElementById("rowsSkippedBox");
+  const rowsErrorsBox = document.getElementById("rowsErrorsBox");
+
+  const toastEl = document.getElementById("toast");
+
+  // Editor modal
   const editorModal = document.getElementById("editorModal");
   const closeEditorBtn = document.getElementById("closeEditorBtn");
-  const closeEditorBtn2 = document.getElementById("closeEditorBtn2");
   const editorTbody = document.getElementById("editorTbody");
-  const editorStats = document.getElementById("editorStats");
   const editorMsg = document.getElementById("editorMsg");
+  const editorStats = document.getElementById("editorStats");
   const addRowBtn = document.getElementById("addRowBtn");
   const saveEditorBtn = document.getElementById("saveEditorBtn");
 
+  // Details modal
+  const detailsModal = document.getElementById("detailsModal");
+  const closeDetailsBtn = document.getElementById("closeDetailsBtn");
+  const detailsTitle = document.getElementById("detailsTitle");
+  const detailsSubtitle = document.getElementById("detailsSubtitle");
+  const detailsTbody = document.getElementById("detailsTbody");
+  const detailsEmpty = document.getElementById("detailsEmpty");
+  const detailsStats = document.getElementById("detailsStats");
+  const copyDetailsBtn = document.getElementById("copyDetailsBtn");
+
+  // State
   let extractedRows = [];
   let csvText = "";
   let skippedCount = 0;
   let errorCount = 0;
+  let skippedDetails = [];
+  let errorDetails = [];
   let loadedFile = null;
 
   let editorRows = [];
   let editorInvalidCount = 0;
 
+  let darkMode = false;
+
+  // -------- Helpers --------
   function toast(msg){
     toastEl.textContent = msg;
     toastEl.classList.add("show");
     setTimeout(() => toastEl.classList.remove("show"), 3000);
   }
-
-  function resetAll(){
-    extractedRows = [];
-    csvText = "";
-    skippedCount = 0;
-    errorCount = 0;
-    loadedFile = null;
-
-    filePill.textContent = "Aucun fichier chargé";
-    filePill.className = "pill";
-    previewPill.textContent = "En attente de données";
-    previewPill.className = "pill";
-
-    wordPreview.style.display = "none";
-    csvPreview.style.display = "none";
-    wordPreviewBox.innerHTML = "";
-    csvPreviewBox.textContent = "";
-
-    updateCounters();
-    setUiEnabled(false);
-  }
-
-  resetBtn.onclick = () => {
-    resetAll();
-    fileInput.value = "";
-    toast("Application réinitialisée.");
-  };
-
-  let darkMode = false;
-  themeBtn.onclick = () => {
-    darkMode = !darkMode;
-    document.documentElement.setAttribute("data-theme", darkMode ? "dark" : "");
-    themeBtn.textContent = darkMode ? "☀️" : "🌙";
-    toast(darkMode ? "Mode sombre activé" : "Mode clair activé");
-  };
 
   function cleanSpaces(txt){
     return String(txt).replace(/[\u00A0\u1680\u2000-\u200B\u202F\u205F\u3000\uFEFF]/g, " ").trim();
@@ -1019,7 +1048,7 @@
 
   function parseCandidateLine(line){
     const parts = line.split(",").map(p => cleanSpaces(p));
-    if (parts.length < 6) return { ok:false, reason:"Pas assez de champs" };
+    if (parts.length < 6) return { ok:false, kind:"error", reason:"Pas assez de champs" };
 
     const username = cleanEmail(parts[0]);
     const firstname = cleanSpaces(parts[2]);
@@ -1032,15 +1061,15 @@
       (firstname.toLowerCase() === "michel" && lastname.toLowerCase() === "martin" && (username.includes("michel.martin@") || email.includes("michel.martin@")));
 
     if (isExample){
-      return { ok:false, skipped:true, reason:"Ligne d'exemple" };
+      return { ok:false, kind:"skipped", reason:"Ligne d'exemple" };
     }
 
     if (!username || !email || !firstname || !lastname) {
-      return { ok:false, reason:"Champs vides" };
+      return { ok:false, kind:"error", reason:"Champs vides" };
     }
 
     if (!isValidEmail(email) || !isValidEmail(username)){
-      return { ok:false, reason:"Email invalide" };
+      return { ok:false, kind:"error", reason:"Email invalide" };
     }
 
     return {
@@ -1143,6 +1172,29 @@
     }
   }
 
+  function resetAll(){
+    extractedRows = [];
+    csvText = "";
+    skippedCount = 0;
+    errorCount = 0;
+    skippedDetails = [];
+    errorDetails = [];
+    loadedFile = null;
+
+    filePill.textContent = "Aucun fichier chargé";
+    filePill.className = "pill";
+    previewPill.textContent = "En attente de données";
+    previewPill.className = "pill";
+
+    wordPreview.style.display = "none";
+    csvPreview.style.display = "none";
+    wordPreviewBox.innerHTML = "";
+    csvPreviewBox.textContent = "";
+
+    updateCounters();
+    setUiEnabled(false);
+  }
+
   function showWordPreview(){
     wordPreview.style.display = "block";
     csvPreview.style.display = "none";
@@ -1190,6 +1242,7 @@ Cordialement,`;
     toast(rich ? "Mail HTML copié (format riche)." : "Mail copié (texte).");
   }
 
+  // -------- Editor --------
   function openEditor(){
     editorRows = extractedRows.map(r => ({
       username: r.username,
@@ -1205,8 +1258,6 @@ Cordialement,`;
   function closeEditor(){
     editorModal.classList.remove("open");
   }
-
-  closeEditorBtn2.addEventListener("click", closeEditor);
 
   function restoreFocus(fi){
     if (!fi) return;
@@ -1321,7 +1372,7 @@ Cordialement,`;
     editorStats.textContent = `${editorRows.length} ligne(s)`;
 
     if (editorRows.length === 0){
-      editorMsg.innerHTML = `<div class="warnline">Aucune ligne dans l'éditeur. Ajoute une ligne ou ferme.</div>`;
+      editorMsg.innerHTML = `<div class="warnline">Aucune ligne dans l'éditeur. Ajoutez une ligne ou fermez.</div>`;
       saveEditorBtn.disabled = true;
       return;
     }
@@ -1330,7 +1381,7 @@ Cordialement,`;
       saveEditorBtn.disabled = true;
       editorMsg.innerHTML = `
         <div class="badline">Impossible d'enregistrer: ${editorInvalidCount} champ(s) invalide(s).</div>
-        <div class="hint" style="margin-top:6px;">Corrige les champs en rouge, ou supprime les lignes concernées.</div>
+        <div class="hint" style="margin-top:6px;">Corrigez les champs en rouge, ou supprimez les lignes concernées.</div>
       `;
     } else {
       saveEditorBtn.disabled = false;
@@ -1344,16 +1395,26 @@ Cordialement,`;
     const next = [];
     let localErrors = 0;
 
+    errorDetails = [];
+
     for (const r of editorRows){
       const username = cleanEmail(r.username);
       const email = cleanEmail(r.email);
       const firstname = cleanSpaces(r.firstname);
       const lastname = cleanSpaces(r.lastname);
 
-      if (username === EXAMPLE_EMAIL || email === EXAMPLE_EMAIL) continue;
+      if (username === EXAMPLE_EMAIL || email === EXAMPLE_EMAIL){
+        skippedDetails.push({ line: `${r.username},${FIXED_PASSWORD},${r.firstname},${r.lastname},${r.email},${FIXED_ACADEMIE}`, reason: "Ligne d'exemple" });
+        skippedCount++;
+        continue;
+      }
 
       if (!isValidEmail(username) || !isValidEmail(email) || !firstname || !lastname){
         localErrors++;
+        errorDetails.push({
+          line: `${r.username},${FIXED_PASSWORD},${r.firstname},${r.lastname},${r.email},${FIXED_ACADEMIE}`,
+          reason: "Champs invalides après édition"
+        });
         continue;
       }
 
@@ -1375,10 +1436,85 @@ Cordialement,`;
     toast("Modifications enregistrées.");
   }
 
+  // -------- Details modal --------
+  function openDetails(which){
+    const items = which === "skipped" ? skippedDetails : errorDetails;
+    const count = items.length;
+
+    detailsTitle.textContent = which === "skipped" ? "Lignes ignorées" : "Lignes en erreur";
+    detailsSubtitle.textContent = `${count} ligne(s)`;
+
+    detailsTbody.innerHTML = "";
+    if (count === 0){
+      detailsEmpty.style.display = "block";
+    } else {
+      detailsEmpty.style.display = "none";
+      const escape = (s) => String(s).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
+      items.forEach((item, i) => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${i+1}</td>
+          <td>${escape(item.reason)}</td>
+          <td style="font-family:monospace; font-size:12px;">${escape(item.line)}</td>
+        `;
+        detailsTbody.appendChild(tr);
+      });
+    }
+
+    detailsStats.textContent = `${count} ligne(s)`;
+    detailsModal.classList.add("open");
+  }
+
+  function closeDetails(){
+    detailsModal.classList.remove("open");
+  }
+
+  rowsSkippedBox.addEventListener("click", () => {
+    if (skippedCount > 0) openDetails("skipped");
+  });
+
+  rowsErrorsBox.addEventListener("click", () => {
+    if (errorCount > 0) openDetails("errors");
+  });
+
+  closeDetailsBtn.addEventListener("click", closeDetails);
+
+  copyDetailsBtn.addEventListener("click", async () => {
+    const which = detailsTitle.textContent.includes("ignorées") ? "skipped" : "errors";
+    const items = which === "skipped" ? skippedDetails : errorDetails;
+    const text = items.map((it, i) => `${i+1}. ${it.reason}\n   ${it.line}`).join("\n\n");
+    try{
+      await navigator.clipboard.writeText(text);
+      toast("Détails copiés.");
+    }catch(_){
+      toast("Échec de la copie.");
+    }
+  });
+
+  // -------- Buttons --------
+  resetBtn.onclick = () => {
+    resetAll();
+    fileInput.value = "";
+    toast("Application réinitialisée.");
+  };
+
+  themeBtn.onclick = () => {
+    darkMode = !darkMode;
+    document.documentElement.setAttribute("data-theme", darkMode ? "dark" : "");
+    themeBtn.textContent = darkMode ? "☀️" : "🌙";
+    toast(darkMode ? "Mode sombre activé" : "Mode clair activé");
+  };
+
   editBtn.addEventListener("click", openEditor);
   closeEditorBtn.addEventListener("click", closeEditor);
   editorModal.addEventListener("click", (e) => { if (e.target === editorModal) closeEditor(); });
-  window.addEventListener("keydown", (e) => { if (e.key === "Escape" && editorModal.classList.contains("open")) closeEditor(); });
+
+  window.addEventListener("keydown", (e) => {
+    if (e.key === "Escape"){
+      if (editorModal.classList.contains("open")) closeEditor();
+      if (detailsModal.classList.contains("open")) closeDetails();
+    }
+  });
 
   addRowBtn.addEventListener("click", () => {
     editorRows.push({ username:"", firstname:"", lastname:"", email:"" });
@@ -1387,6 +1523,7 @@ Cordialement,`;
 
   saveEditorBtn.addEventListener("click", saveEditor);
 
+  // -------- Core: extract from DOCX --------
   async function handleFile(file){
     if (!file) return;
     if (!/\.docx$/i.test(file.name)){
@@ -1435,11 +1572,12 @@ Cordialement,`;
         if (cells.length === 1){
           const v = cells[0];
           if (v.includes(",") && v.includes("@")) lines.push(v);
+          else if (v) lines.push(v);
           continue;
         }
 
         const joined = cells.join(",");
-        if (joined.includes(",") && joined.includes("@")) lines.push(joined);
+        if (joined) lines.push(joined);
       }
     } else {
       const rawLines = (text || "")
@@ -1447,24 +1585,39 @@ Cordialement,`;
         .map(l => cleanSpaces(l))
         .filter(Boolean);
 
-      const candidates = rawLines.filter(l => l.includes(",") && l.includes("@") && l.split(",").length >= 6);
-      lines = candidates;
+      lines = rawLines;
     }
 
     extractedRows = [];
     skippedCount = 0;
     errorCount = 0;
+    skippedDetails = [];
+    errorDetails = [];
 
     for (const line of lines){
-      const parsed = parseCandidateLine(line);
+      const trimmed = cleanSpaces(line);
+      if (!trimmed) continue;
+
+      const looksLikeData = trimmed.includes(",") && trimmed.split(",").length >= 3;
+      const parsed = looksLikeData ? parseCandidateLine(trimmed) : null;
+
+      if (!parsed){
+        skippedCount++;
+        skippedDetails.push({ line: trimmed, reason: "Ligne non reconnue" });
+        continue;
+      }
+
       if (!parsed.ok){
-        if (parsed.skipped) skippedCount++;
-        else {
-          if (!line.includes("@") || line.split(",").length < 6) skippedCount++;
-          else errorCount++;
+        if (parsed.kind === "skipped"){
+          skippedCount++;
+          skippedDetails.push({ line: trimmed, reason: parsed.reason || "Ignorée" });
+        } else {
+          errorCount++;
+          errorDetails.push({ line: trimmed, reason: parsed.reason || "Erreur" });
         }
         continue;
       }
+
       extractedRows.push(parsed.row);
     }
 
@@ -1473,6 +1626,7 @@ Cordialement,`;
       if (first.email === EXAMPLE_EMAIL || first.username === EXAMPLE_EMAIL){
         extractedRows.shift();
         skippedCount++;
+        skippedDetails.push({ line: EXAMPLE_EMAIL_RAW, reason: "Ligne d'exemple (sécurité)" });
       }
     }
 
@@ -1487,6 +1641,7 @@ Cordialement,`;
     toast("Traitement terminé.");
   }
 
+  // Drop zone
   dropZone.addEventListener("click", () => fileInput.click());
   dropZone.addEventListener("dragover", (e) => { e.preventDefault(); dropZone.classList.add("dragover"); });
   dropZone.addEventListener("dragleave", () => dropZone.classList.remove("dragover"));
@@ -1502,6 +1657,7 @@ Cordialement,`;
     if (f) handleFile(f);
   });
 
+  // Buttons
   previewWordBtn.addEventListener("click", showWordPreview);
   previewCsvBtn.addEventListener("click", showCsvPreview);
   downloadBtn.addEventListener("click", downloadCsv);
