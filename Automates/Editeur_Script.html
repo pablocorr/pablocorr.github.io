@@ -131,6 +131,16 @@
       transform: translateY(-2px);
     }
 
+    button#openFile {
+      background-color: #ffc107;
+      color: #333;
+    }
+
+    button#openFile:hover {
+      background-color: #e0a800;
+      transform: translateY(-2px);
+    }
+
     .indication {
       text-align: center;
       margin-top: 1rem;
@@ -158,6 +168,11 @@
       background-color: yellow;
       font-weight: bold;
     }
+    
+    /* Cacher l'input file */
+    #fileInput {
+      display: none;
+    }
   </style>
 </head>
 <body>
@@ -172,7 +187,10 @@
       <button id="execute">Exécuter le Script</button>
       <button id="reset">Réinitialiser</button>
       <button id="save">Enregistrer</button>
+      <button id="openFile">Ouvrir un fichier</button>
     </div>
+    <!-- Input file caché pour la sélection de fichiers -->
+    <input type="file" id="fileInput" accept=".html,.htm,.txt,.js,.css">
     <div class="indication">
       Veuillez coller votre script dans la zone ci-dessus pour l'exécuter.
     </div>
@@ -310,6 +328,38 @@
       } else {
         alert('Aucun résultat trouvé.');
       }
+    });
+
+    // Ouvrir un fichier HTML
+    document.getElementById('openFile').addEventListener('click', function () {
+      document.getElementById('fileInput').click();
+    });
+
+    // Gérer la sélection de fichier
+    document.getElementById('fileInput').addEventListener('change', function (event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      // Vérifier que c'est un fichier texte/HTML
+      if (!file.type.match('text.*') && !file.name.match(/\.(html|htm|txt|js|css)$/i)) {
+        alert('Veuillez sélectionner un fichier texte, HTML, JavaScript ou CSS.');
+        return;
+      }
+
+      const reader = new FileReader();
+      
+      reader.onload = function (e) {
+        // Insérer le contenu dans l'éditeur
+        editor.setValue(e.target.result);
+        // Réinitialiser l'input file pour permettre la sélection du même fichier
+        document.getElementById('fileInput').value = '';
+      };
+      
+      reader.onerror = function () {
+        alert('Erreur lors de la lecture du fichier.');
+      };
+      
+      reader.readAsText(file);
     });
   </script>
 </body>
