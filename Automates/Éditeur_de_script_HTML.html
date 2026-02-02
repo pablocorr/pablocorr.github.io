@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Éditeur HTML</title>
+
+  <!-- CodeMirror 5 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.63.0/codemirror.min.css">
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.63.0/codemirror.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.63.0/mode/htmlmixed/htmlmixed.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.63.0/mode/javascript/javascript.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.63.0/mode/css/css.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.63.0/mode/xml/xml.min.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.63.0/addon/edit/closetag.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.63.0/addon/edit/matchbrackets.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.63.0/addon/selection/active-line.min.js"></script>
+
+  <style>
+    :root{
+      --bg:#0b1220;
+      --text:#e7eefc;
+      --muted:#a8b3c7;
+      --border:rgba(255,255,255,.12);
+      --shadow:0 10px 30px rgba(0,0,0,.35);
+      --btn:#1b2c54;
+      --btnHover:#233868;
+
+      /* Palette proche de ta capture */
+      --cm-bg:#182028;         /* fond éditeur */
+      --cm-gutter:#121a21;     /* gouttière */
+      --cm-caret:#e7eefc;      /* curseur */
+      --cm-text:#d0d0d0;       /* texte par défaut */
+
+      --cm-tag:#ea365a;        /* tags HTML + </> */
+      --cm-attr:#b0d870;       /* attributs */
+      --cm-string:#e3af4f;     /* strings */
+      --cm-keyword:#b078e0;    /* keywords JS */
+      --cm-number:#f3c56b;     /* nombres */
+      --cm-prop:#b078e0;       /* propriétés CSS */
+      --cm-comment:#6f7f8b;    /* commentaires */
+      --cm-operator:#cbd5e1;   /* opérateurs/punct */
+
+      --cm-line:#22303a;       /* ligne active */
+      --cm-select:rgba(110,168,254,.30);
+    }
+
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+      background:
+        radial-gradient(1200px 800px at 20% 10%, rgba(110,168,254,.18), transparent 60%),
+        radial-gradient(900px 700px at 80% 0%, rgba(43,213,118,.10), transparent 55%),
+        var(--bg);
+      color:var(--text);
+      min-height:100vh;
+      display:flex;
+      flex-direction:column;
+      padding:18px;
+    }
+
+    .container{
+      width:100%;
+      max-width:1200px;
+      margin:0 auto;
+    }
+
+    header{
+      display:flex;
+      align-items:flex-end;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:12px;
+    }
+    h1{ margin:0; font-size:18px; letter-spacing:.2px; }
+    .hint{ font-size:12px; color:var(--muted); text-align:right; line-height:1.3; }
+
+    .toolbar{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      align-items:center;
+      padding:12px;
+      border:1px solid var(--border);
+      border-radius:14px;
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+      box-shadow: var(--shadow);
+      margin-bottom:10px;
+    }
+
+    .btn{
+      appearance:none;
+      border:1px solid var(--border);
+      background:var(--btn);
+      color:var(--text);
+      padding:10px 12px;
+      border-radius:12px;
+      cursor:pointer;
+      font-weight:650;
+      font-size:13px;
+      transition: transform .06s ease, background .15s ease, border-color .15s ease;
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      user-select:none;
+      white-space:nowrap;
+    }
+    .btn:hover{ background:var(--btnHover); border-color: rgba(255,255,255,.18); }
+    .btn:active{ transform: translateY(1px); }
+    .btn.secondary{ background:transparent; }
+    .btn.ok{ background: rgba(43,213,118,.16); border-color: rgba(43,213,118,.28); }
+    .btn.ok:hover{ background: rgba(43,213,118,.22); }
+    .btn.danger{ background: rgba(255,107,107,.16); border-color: rgba(255,107,107,.28); }
+    .btn.danger:hover{ background: rgba(255,107,107,.22); }
+
+    .spacer{ flex:1 1 auto; }
+
+    .searchbar{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex:1 1 520px;
+      min-width:260px;
+      padding:10px;
+      border-radius:12px;
+      background: rgba(255,255,255,.04);
+      border:1px solid var(--border);
+    }
+    .searchbar input{
+      flex:1;
+      width:100%;
+      border:none;
+      outline:none;
+      background:transparent;
+      color:var(--text);
+      font-size:13px;
+    }
+    .count{
+      font-size:12px;
+      color:var(--muted);
+      white-space:nowrap;
+      padding-right:4px;
+      min-width:54px;
+      text-align:right;
+    }
+
+    .status{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      padding:8px 10px;
+      border:1px solid var(--border);
+      border-radius:999px;
+      background: rgba(255,255,255,.04);
+      color:var(--muted);
+      font-size:12px;
+      user-select:none;
+      white-space:nowrap;
+    }
+    .dot{
+      width:10px;height:10px;border-radius:999px;
+      background: rgba(255,209,102,.95);
+    }
+    .status.saved .dot{ background: rgba(43,213,118,.95); }
+    .status strong{ color:var(--text); font-weight:700; }
+
+    .editorCard{
+      border:1px solid var(--border);
+      border-radius:16px;
+      overflow:hidden;
+      box-shadow: var(--shadow);
+      background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.03));
+    }
+
+    .editorHeader{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      flex-wrap:wrap;
+      padding:10px 12px;
+      border-bottom:1px solid var(--border);
+      background: rgba(0,0,0,.18);
+      color:var(--muted);
+      font-size:12px;
+    }
+
+    .badges{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+    .badge{
+      padding:6px 10px;
+      border:1px solid var(--border);
+      border-radius:999px;
+      background: rgba(255,255,255,.04);
+    }
+    .badge strong{ color:var(--text); }
+
+    /* ---------------------------
+       CodeMirror THEME custom (proche capture)
+       --------------------------- */
+    .cm-s-captureLike.CodeMirror{
+      height: 64vh;
+      border:none;
+      background: var(--cm-bg);
+      color: var(--cm-text);
+      font-size: 13px;
+      line-height: 1.55;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    }
+    .cm-s-captureLike .CodeMirror-scroll{ padding: 10px 0; }
+
+    .cm-s-captureLike .CodeMirror-gutters{
+      background: var(--cm-gutter);
+      border-right: 1px solid rgba(255,255,255,.10);
+    }
+    .cm-s-captureLike .CodeMirror-linenumber{
+      color: rgba(168,179,199,.70);
+    }
+
+    .cm-s-captureLike .CodeMirror-cursor{
+      border-left: 2px solid var(--cm-caret);
+    }
+
+    .cm-s-captureLike .CodeMirror-activeline-background{
+      background: rgba(34,48,58,.55);
+    }
+
+    .cm-s-captureLike .CodeMirror-selected,
+    .cm-s-captureLike .CodeMirror-line::selection,
+    .cm-s-captureLike .CodeMirror-line > span::selection,
+    .cm-s-captureLike .CodeMirror-line > span > span::selection{
+      background: var(--cm-select);
+    }
+
+    /* Token colors */
+    .cm-s-captureLike span.cm-tag{ color: var(--cm-tag); }
+    .cm-s-captureLike span.cm-bracket{ color: var(--cm-tag); }
+    .cm-s-captureLike span.cm-attribute{ color: var(--cm-attr); }
+    .cm-s-captureLike span.cm-string{ color: var(--cm-string); }
+    .cm-s-captureLike span.cm-string-2{ color: var(--cm-string); }
+
+    .cm-s-captureLike span.cm-keyword{ color: var(--cm-keyword); }
+    .cm-s-captureLike span.cm-def{ color: var(--cm-string); }
+    .cm-s-captureLike span.cm-variable{ color: var(--cm-text); }
+    .cm-s-captureLike span.cm-variable-2{ color: var(--cm-text); }
+    .cm-s-captureLike span.cm-variable-3{ color: var(--cm-text); }
+
+    .cm-s-captureLike span.cm-property{ color: var(--cm-prop); }
+    .cm-s-captureLike span.cm-qualifier{ color: var(--cm-attr); }
+    .cm-s-captureLike span.cm-atom{ color: var(--cm-keyword); }
+
+    .cm-s-captureLike span.cm-number{ color: var(--cm-number); }
+    .cm-s-captureLike span.cm-comment{ color: var(--cm-comment); font-style: italic; }
+    .cm-s-captureLike span.cm-operator{ color: var(--cm-operator); }
+    .cm-s-captureLike span.cm-meta{ color: var(--cm-number); }
+
+    /* Recherche - surlignage */
+    .cm-find-highlight{ background: rgba(255,209,102,.85); color:#000; font-weight:700; }
+    .cm-find-current{ background: rgba(110,168,254,.95); color:#000; font-weight:800; }
+
+    .footer{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      flex-wrap:wrap;
+      padding:12px;
+      margin-top:10px;
+      border:1px solid var(--border);
+      border-radius:14px;
+      background: rgba(255,255,255,.03);
+      box-shadow: var(--shadow);
+    }
+    .footer .note{
+      font-size:12px;
+      color:var(--muted);
+    }
+
+    #fileInput{ display:none; }
+
+    @media (max-width: 640px){
+      header{ flex-direction:column; align-items:flex-start; }
+      .hint{ text-align:left; }
+      .cm-s-captureLike.CodeMirror{ height:62vh; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <header>
+      <h1>Éditeur HTML</h1>
+      <div class="hint">
+        Recherche: <b>Entrée</b> suivant - <b>Shift+Entrée</b> précédent
+      </div>
+    </header>
+
+    <div class="toolbar">
+      <button class="btn" id="openFile" type="button">📂 Ouvrir un fichier</button>
+      <input id="fileInput" type="file" accept=".html,.htm,.txt,.js,.css,text/*" />
+
+      <div class="searchbar" role="search">
+        <input type="text" id="searchInput" placeholder="Rechercher un terme..." autocomplete="off" />
+        <div class="count" id="count">0 / 0</div>
+        <button class="btn secondary" id="prevBtn" type="button" title="Occurence précédente">⬆️</button>
+        <button class="btn secondary" id="nextBtn" type="button" title="Occurence suivante">⬇️</button>
+      </div>
+
+      <div class="spacer"></div>
+
+      <div class="status" id="status">
+        <span class="dot"></span>
+        <strong id="statusLabel">Non sauvegardé</strong>
+      </div>
+    </div>
+
+    <div class="editorCard">
+      <div class="editorHeader">
+        <div class="badges">
+          <div class="badge" id="fileBadge">Fichier - <strong>(aucun)</strong></div>
+          <div class="badge">Lignes - <strong id="lineCount">0</strong></div>
+          <div class="badge">Caractères - <strong id="charCount">0</strong></div>
+        </div>
+        <div id="persistNote">Restauration - aucune</div>
+      </div>
+
+      <textarea id="codeEditor"></textarea>
+    </div>
+
+    <div class="footer">
+      <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <button class="btn ok" id="save" type="button">💾 Enregistrer</button>
+        <button class="btn" id="execute" type="button">▶️ Exécuter</button>
+        <button class="btn danger" id="reset" type="button">🧹 Réinitialiser</button>
+      </div>
+      <div class="note">Auto-sauvegarde - sessionStorage + localStorage (Reset efface tout)</div>
+    </div>
+  </div>
+
+  <script>
+    // Storage
+    const KEY_SESSION  = "html_editor_cm5_session_capture";
+    const KEY_LOCAL    = "html_editor_cm5_local_capture";
+    const KEY_FILENAME = "html_editor_cm5_filename_capture";
+
+    // UI
+    const statusEl = document.getElementById("status");
+    const statusLabel = document.getElementById("statusLabel");
+    const fileBadge = document.getElementById("fileBadge");
+    const persistNote = document.getElementById("persistNote");
+    const lineCount = document.getElementById("lineCount");
+    const charCount = document.getElementById("charCount");
+
+    const searchInput = document.getElementById("searchInput");
+    const prevBtn = document.getElementById("prevBtn");
+    const nextBtn = document.getElementById("nextBtn");
+    const countEl = document.getElementById("count");
+
+    function escapeHTML(s){
+      return String(s)
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
+    }
+
+    function setSaved(saved){
+      if(saved){
+        statusEl.classList.add("saved");
+        statusLabel.textContent = "Sauvegardé";
+      }else{
+        statusEl.classList.remove("saved");
+        statusLabel.textContent = "Non sauvegardé";
+      }
+    }
+
+    function updateStats(){
+      const text = editor.getValue();
+      charCount.textContent = String(text.length);
+      lineCount.textContent = String(editor.lineCount());
+    }
+
+    function persist(text){
+      sessionStorage.setItem(KEY_SESSION, text);
+      localStorage.setItem(KEY_LOCAL, text);
+      setSaved(true);
+    }
+
+    function clearPersist(){
+      sessionStorage.removeItem(KEY_SESSION);
+      localStorage.removeItem(KEY_LOCAL);
+      localStorage.removeItem(KEY_FILENAME);
+      setSaved(false);
+    }
+
+    function restore(){
+      const s = sessionStorage.getItem(KEY_SESSION);
+      const l = localStorage.getItem(KEY_LOCAL);
+      if(s && s.length) return { text: s, source: "session" };
+      if(l && l.length) return { text: l, source: "local" };
+      return { text: "", source: "" };
+    }
+
+    // CodeMirror init - EDITABLE + lineNumbers + coloration + thème custom
+    const editor = CodeMirror.fromTextArea(document.getElementById("codeEditor"), {
+      mode: "htmlmixed",
+      theme: "captureLike",
+      lineNumbers: true,
+      styleActiveLine: true,
+      autoCloseTags: true,
+      matchBrackets: true,
+      indentUnit: 2,
+      tabSize: 2
+    });
+
+    // Tab inserts spaces
+    editor.setOption("extraKeys", {
+      Tab: (cm) => cm.replaceSelection("  ", "end"),
+      "Shift-Tab": (cm) => cm.execCommand("indentLess")
+    });
+
+    // Restore content + filename
+    (function initRestore(){
+      const r = restore();
+      if(r.text){
+        editor.setValue(r.text);
+        persistNote.textContent = "Restauration - " + r.source;
+        setSaved(true);
+      }else{
+        persistNote.textContent = "Restauration - aucune";
+        setSaved(false);
+      }
+
+      const fname = localStorage.getItem(KEY_FILENAME);
+      if(fname){
+        fileBadge.innerHTML = "Fichier - <strong>" + escapeHTML(fname) + "</strong>";
+      }
+
+      updateStats();
+    })();
+
+    // Autosave debounce
+    let t = null;
+    editor.on("change", () => {
+      setSaved(false);
+      updateStats();
+      clearTimeout(t);
+      t = setTimeout(() => persist(editor.getValue()), 350);
+      refreshSearch(true);
+    });
+
+    window.addEventListener("beforeunload", () => {
+      const text = editor.getValue();
+      sessionStorage.setItem(KEY_SESSION, text);
+      localStorage.setItem(KEY_LOCAL, text);
+    });
+
+    // Open file
+    const openBtn = document.getElementById("openFile");
+    const fileInput = document.getElementById("fileInput");
+
+    openBtn.addEventListener("click", () => fileInput.click());
+
+    fileInput.addEventListener("change", (event) => {
+      const file = event.target.files && event.target.files[0];
+      if(!file) return;
+
+      const ok = file.type.match("text.*") || file.name.match(/\.(html|htm|txt|js|css)$/i);
+      if(!ok){
+        alert("Veuillez sélectionner un fichier texte/HTML/JS/CSS.");
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        editor.setValue(String(e.target.result || ""));
+        setSaved(false);
+        updateStats();
+
+        const base = file.name.replace(/\.(html?|HTML?|txt|js|css)$/i, "");
+        localStorage.setItem(KEY_FILENAME, base);
+        fileBadge.innerHTML = "Fichier - <strong>" + escapeHTML(base) + "</strong>";
+
+        fileInput.value = "";
+      };
+      reader.onerror = () => alert("Erreur lors de la lecture du fichier.");
+      reader.readAsText(file);
+    });
+
+    // Run
+    document.getElementById("execute").addEventListener("click", () => {
+      const code = editor.getValue();
+      if(!code.trim()){
+        alert("Veuillez coller du code avant d'exécuter.");
+        return;
+      }
+      const w = window.open("", "_blank");
+      if(!w){
+        alert("Pop-up bloquée par le navigateur.");
+        return;
+      }
+      w.document.open();
+      w.document.write(code);
+      w.document.close();
+    });
+
+    // Save to file
+    document.getElementById("save").addEventListener("click", () => {
+      const content = editor.getValue();
+      if(!content.trim()){
+        alert("Rien à enregistrer.");
+        return;
+      }
+      const suggested = (localStorage.getItem(KEY_FILENAME) || "script").trim() || "script";
+      const fileName = prompt("Nom du fichier (sans extension) :", suggested);
+      if(!fileName) return;
+
+      const clean = fileName.replace(/[\\/:*?"<>|]/g, "").trim();
+      if(!clean){
+        alert("Nom de fichier invalide.");
+        return;
+      }
+
+      const blob = new Blob([content], { type: "text/html;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = clean + ".html";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+
+      localStorage.setItem(KEY_FILENAME, clean);
+      fileBadge.innerHTML = "Fichier - <strong>" + escapeHTML(clean) + "</strong>";
+      persist(content);
+    });
+
+    // Reset (clears storage)
+    document.getElementById("reset").addEventListener("click", () => {
+      if(!confirm("Voulez-vous vraiment tout effacer ? (cela supprime aussi la sauvegarde)")) return;
+      editor.setValue("");
+      clearHighlights();
+      clearPersist();
+      currentMatch = -1;
+      updateCounter();
+      updateStats();
+      persistNote.textContent = "Restauration - aucune";
+      fileBadge.innerHTML = "Fichier - <strong>(aucun)</strong>";
+    });
+
+    // Search - highlight + prev/next
+    let marks = [];
+    let matchRanges = [];
+    let currentMatch = -1;
+
+    function clearHighlights(){
+      for(const m of marks) m.clear();
+      marks = [];
+      matchRanges = [];
+    }
+
+    function updateCounter(){
+      const total = matchRanges.length;
+      const cur = (total && currentMatch >= 0) ? (currentMatch + 1) : 0;
+      countEl.textContent = cur + " / " + total;
+    }
+
+    function refreshSearch(keepIndex){
+      const term = (searchInput.value || "").trim();
+      clearHighlights();
+
+      if(!term){
+        currentMatch = -1;
+        updateCounter();
+        return;
+      }
+
+      const content = editor.getValue();
+      const escaped = term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      const re = new RegExp(escaped, "gi");
+
+      let m;
+      while((m = re.exec(content)) !== null){
+        const start = m.index;
+        const end = start + m[0].length;
+        matchRanges.push({ from: editor.posFromIndex(start), to: editor.posFromIndex(end) });
+      }
+
+      if(!matchRanges.length){
+        currentMatch = -1;
+        updateCounter();
+        return;
+      }
+
+      if(!keepIndex || currentMatch < 0) currentMatch = 0;
+      if(currentMatch >= matchRanges.length) currentMatch = matchRanges.length - 1;
+
+      paintMarks();
+      updateCounter();
+    }
+
+    function paintMarks(){
+      const term = (searchInput.value || "").trim();
+      if(!term || !matchRanges.length) return;
+
+      const content = editor.getValue();
+      const escaped = term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      const re = new RegExp(escaped, "gi");
+
+      clearHighlights();
+
+      let idx = 0;
+      let m;
+      while((m = re.exec(content)) !== null){
+        const start = m.index;
+        const end = start + m[0].length;
+        const from = editor.posFromIndex(start);
+        const to = editor.posFromIndex(end);
+
+        matchRanges.push({ from, to });
+
+        const cls = (idx === currentMatch) ? "cm-find-current" : "cm-find-highlight";
+        marks.push(editor.markText(from, to, { className: cls }));
+        idx++;
+      }
+
+      const cur = matchRanges[currentMatch];
+      editor.scrollIntoView(cur.from, 80);
+    }
+
+    function goto(delta){
+      if(!matchRanges.length) return;
+      currentMatch = (currentMatch + delta) % matchRanges.length;
+      if(currentMatch < 0) currentMatch = matchRanges.length - 1;
+      paintMarks();
+      updateCounter();
+    }
+
+    searchInput.addEventListener("input", () => {
+      currentMatch = -1;
+      refreshSearch(false);
+    });
+
+    searchInput.addEventListener("keydown", (e) => {
+      if(e.key === "Enter"){
+        e.preventDefault();
+        goto(e.shiftKey ? -1 : +1);
+      }
+    });
+
+    nextBtn.addEventListener("click", () => goto(+1));
+    prevBtn.addEventListener("click", () => goto(-1));
+
+    updateCounter();
+  </script>
+</body>
+</html>
