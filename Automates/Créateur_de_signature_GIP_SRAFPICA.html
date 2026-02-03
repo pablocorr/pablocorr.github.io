@@ -1,0 +1,950 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Créateur de signature GIP / SRAFPICA</title>
+  <style>
+    :root {
+      --bg: #f5f7fa;
+      --card: #ffffff;
+      --card2: #f9fafb;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --line: rgba(0,0,0,.08);
+      --accent: #3b82f6;
+      --danger: #ef4444;
+      --ok: #10b981;
+      --btn: #f3f4f6;
+      --btn2: #e5e7eb;
+      --input-bg: #ffffff;
+      --shadow: rgba(0,0,0,.08);
+    }
+
+    * { 
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: radial-gradient(ellipse 1400px 900px at 20% 15%, rgba(59,130,246,.08), transparent 60%),
+                  radial-gradient(ellipse 1200px 700px at 85% 25%, rgba(16,185,129,.06), transparent 65%),
+                  var(--bg);
+      background-attachment: fixed;
+      color: var(--text);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    header {
+      padding: 28px 24px 20px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(255, 255, 255, .95);
+      backdrop-filter: blur(12px) saturate(180%);
+      -webkit-backdrop-filter: blur(12px) saturate(180%);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 12px var(--shadow);
+      text-align: center;
+    }
+
+    header h1 {
+      margin: 0 auto 10px;
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+      background: linear-gradient(135deg, #1f2937 0%, #6b7280 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    header p {
+      margin: 0 auto;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.5;
+      max-width: 800px;
+    }
+
+    .wrap {
+      display: flex;
+      gap: 20px;
+      padding: 24px;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .panel {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 24px;
+      box-shadow: 0 4px 16px var(--shadow), 0 1px 4px rgba(0,0,0,.04);
+      min-width: 0;
+      transition: box-shadow 0.3s ease;
+    }
+
+    .panel:hover {
+      box-shadow: 0 8px 24px var(--shadow), 0 2px 8px rgba(0,0,0,.06);
+    }
+
+    .left { flex: 0 0 480px; }
+    .right { flex: 1 1 auto; }
+
+    .section-title {
+      margin: 0 0 20px;
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text);
+      letter-spacing: -0.2px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid rgba(59,130,246,.3);
+      text-transform: uppercase;
+      font-size: 12px;
+      letter-spacing: 1px;
+    }
+
+    form {
+      display: grid;
+      gap: 18px;
+    }
+
+    label {
+      display: grid;
+      gap: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text);
+      letter-spacing: -0.1px;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      border-radius: 12px;
+      border: 1.5px solid var(--line);
+      background: var(--input-bg);
+      color: var(--text);
+      padding: 12px 14px;
+      outline: none;
+      font-size: 14px;
+      font-family: inherit;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    input::placeholder, textarea::placeholder { 
+      color: rgba(107, 114, 128, .5);
+      font-weight: 400;
+    }
+
+    input:hover, select:hover, textarea:hover {
+      border-color: rgba(0,0,0,.2);
+      background: var(--card2);
+    }
+
+    input:focus, select:focus, textarea:focus {
+      border-color: rgba(59,130,246,.7);
+      background: #ffffff;
+      box-shadow: 0 0 0 4px rgba(59,130,246,.1);
+      transform: translateY(-1px);
+    }
+
+    select {
+      cursor: pointer;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b7280' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 14px center;
+      padding-right: 40px;
+      appearance: none;
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .actions {
+      display: flex;
+      gap: 12px;
+      margin-top: 12px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      border: 1.5px solid var(--line);
+      background: var(--btn);
+      color: var(--text);
+      padding: 12px 20px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 14px;
+      font-family: inherit;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      user-select: none;
+      position: relative;
+      overflow: hidden;
+    }
+
+    button::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(135deg, rgba(0,0,0,.05), transparent);
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+
+    button:hover {
+      border-color: rgba(0,0,0,.2);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px var(--shadow);
+    }
+
+    button:hover::before {
+      opacity: 1;
+    }
+
+    button:active { 
+      transform: translateY(0px);
+      box-shadow: 0 2px 8px var(--shadow);
+    }
+
+    button.primary {
+      background: linear-gradient(135deg, var(--accent) 0%, #2563eb 100%);
+      border-color: var(--accent);
+      color: #fff;
+      font-weight: 700;
+    }
+
+    button.primary:hover {
+      border-color: #2563eb;
+      box-shadow: 0 8px 24px rgba(59,130,246,.3);
+    }
+
+    button.danger {
+      background: linear-gradient(135deg, var(--danger) 0%, #dc2626 100%);
+      border-color: var(--danger);
+      color: #fff;
+    }
+
+    button.danger:hover {
+      border-color: #dc2626;
+      box-shadow: 0 8px 24px rgba(239,68,68,.3);
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none !important;
+    }
+
+    button:disabled:hover {
+      border-color: var(--line);
+      box-shadow: none;
+    }
+
+    .hint {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: -4px;
+      line-height: 1.5;
+      font-weight: 400;
+    }
+
+    .status {
+      margin-top: 16px;
+      padding: 14px 16px;
+      border-radius: 12px;
+      border: 1.5px solid var(--line);
+      background: var(--card2);
+      color: var(--muted);
+      font-size: 13px;
+      min-height: 48px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      line-height: 1.5;
+      font-weight: 500;
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .status.ok { 
+      border-color: rgba(16,185,129,.4); 
+      background: rgba(16,185,129,.08);
+      color: #047857;
+    }
+
+    .status.err { 
+      border-color: rgba(239,68,68,.4); 
+      background: rgba(239,68,68,.08);
+      color: #b91c1c;
+    }
+
+    .preview-box {
+      background: #ffffff;
+      color: #111;
+      border-radius: 14px;
+      border: 1px solid rgba(0,0,0,.12);
+      padding: 20px;
+      overflow: auto;
+      min-height: 280px;
+      box-shadow: inset 0 1px 4px rgba(0,0,0,.06);
+    }
+
+    .preview-placeholder {
+      color: rgba(0,0,0,.5);
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 500;
+      text-align: center;
+      padding: 40px 20px;
+    }
+
+    .right-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 16px;
+      align-items: center;
+    }
+
+    textarea.code {
+      margin-top: 16px;
+      height: 200px;
+      resize: vertical;
+      background: var(--card2);
+      color: var(--text);
+      border: 1.5px solid var(--line);
+      border-radius: 12px;
+      padding: 14px;
+      font-family: 'Fira Code', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 12px;
+      line-height: 1.6;
+      white-space: pre;
+      letter-spacing: 0;
+    }
+
+    .tutorials {
+      margin-top: 20px;
+      border-top: 1.5px solid var(--line);
+      padding-top: 20px;
+      display: none;
+      animation: slideDown 0.3s ease;
+    }
+
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .tutorial {
+      margin: 16px 0 24px;
+      padding: 16px;
+      border-radius: 14px;
+      border: 1.5px solid var(--line);
+      background: var(--card2);
+      box-shadow: 0 2px 8px var(--shadow);
+    }
+
+    .tutorial h3 {
+      margin: 0 0 14px;
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text);
+      text-align: center;
+      letter-spacing: -0.2px;
+    }
+
+    .tutorial iframe {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      border: 0;
+      border-radius: 10px;
+      background: #000;
+      box-shadow: 0 4px 12px rgba(0,0,0,.3);
+    }
+
+    /* Scrollbar styling */
+    ::-webkit-scrollbar {
+      width: 10px;
+      height: 10px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: rgba(0,0,0,.03);
+      border-radius: 10px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: rgba(0,0,0,.15);
+      border-radius: 10px;
+      transition: background 0.2s ease;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(0,0,0,.25);
+    }
+
+    @media (max-width: 1024px) {
+      .wrap { 
+        flex-direction: column;
+        padding: 16px;
+      }
+      .left { 
+        flex-basis: auto;
+        max-width: 100%;
+      }
+      .panel {
+        padding: 20px;
+      }
+      header {
+        padding: 20px 16px 16px;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .row {
+        grid-template-columns: 1fr;
+      }
+      .actions {
+        flex-direction: column;
+      }
+      button {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Créateur de signature GIP / SRAFPICA</h1>
+    <p>Remplissez le formulaire - cliquez sur "Valider" pour générer la signature, la prévisualiser, puis la copier ou la télécharger.</p>
+  </header>
+
+  <main class="wrap">
+    <section class="panel left">
+      <h2 class="section-title">1 - Formulaire (tous les champs sont obligatoires)</h2>
+
+      <form id="sigForm" autocomplete="off" novalidate>
+        <label>
+          Prénom NOM
+          <input id="var_nom" name="var_nom" type="text" placeholder="Ex: Marie DUPONT" required />
+        </label>
+
+        <label>
+          Poste - Fonction
+          <input id="var_poste" name="var_poste" type="text" placeholder="Ex: Chargé(e) de mission" required />
+        </label>
+
+        <label>
+          N° de Bureau - Étage
+          <input id="var_bureau" name="var_bureau" type="text" placeholder="Ex: Bureau 214 - 2e étage" required />
+        </label>
+
+        <div class="row">
+          <label>
+            N° de Téléphone
+            <input id="var_tel" name="var_tel" type="tel" inputmode="numeric" placeholder="0X XX XX XX XX" required />
+            <div class="hint">Format attendu: 10 chiffres, commence par 0. Les espaces sont ajoutés automatiquement.</div>
+          </label>
+
+          <label>
+            Adresse mail
+            <input id="var_mail" name="var_mail" type="text" inputmode="email" placeholder="prenom.nom@ac-bordeaux.fr" required />
+            <div class="hint">Astuce: tapez "@ac" ou "@reg" après le nom pour autocompléter le domaine.</div>
+          </label>
+        </div>
+
+        <label>
+          Service
+          <select id="var_service" name="var_service" required>
+            <option value="" selected disabled>Choisir...</option>
+            <option value="GIP-FCIP">GIP-FCIP</option>
+            <option value="SRAFPICA">SRAFPICA</option>
+            <option value="SRAFPICA RANA">SRAFPICA RANA</option>
+            <option value="CAFOC">CAFOC</option>
+            <option value="DAVA">DAVA</option>
+            <option value="DABM">DABM</option>
+          </select>
+        </label>
+
+        <div class="actions">
+          <button type="button" class="danger" id="btnReset">Réinitialiser</button>
+          <button type="button" class="primary" id="btnValidate">Valider</button>
+        </div>
+
+        <div id="formStatus" class="status" aria-live="polite">
+          Prêt - renseignez les champs puis validez.
+        </div>
+      </form>
+    </section>
+
+    <section class="panel right">
+      <h2 class="section-title">2 - Prévisualisation</h2>
+
+      <div id="preview" class="preview-box">
+        <div class="preview-placeholder">
+          La signature apparaîtra ici après validation.
+        </div>
+      </div>
+
+      <div class="right-actions">
+        <button type="button" id="btnCopy" disabled>Copier le code HTML</button>
+        <button type="button" id="btnDownload" disabled>Télécharger le fichier HTML</button>
+        <button type="button" id="btnTutorials">Afficher les tutoriels vidéo</button>
+        <span id="copyStatus" class="hint" style="margin-left:auto;"></span>
+      </div>
+
+      <textarea id="codeOut" class="code" placeholder="Le code HTML généré s'affichera ici." readonly></textarea>
+
+      <div id="tutorials" class="tutorials">
+        <div class="tutorial">
+          <h3>Thunderbird : intégrer une signature HTML</h3>
+          <iframe
+            src="https://www.youtube.com/embed/CQ1qVgX9B48?si=RrR_Sp3QlYDIloHQ"
+            title="YouTube video player"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            referrerpolicy="strict-origin-when-cross-origin"
+            allowfullscreen>
+          </iframe>
+        </div>
+
+        <div class="tutorial">
+          <h3>Thunderbird : gérer plusieurs signatures</h3>
+          <iframe
+            src="https://www.youtube.com/embed/Ug8yZ5N2tjk?si=H8wk5_9IZhSFPBj9"
+            title="YouTube video player"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            referrerpolicy="strict-origin-when-cross-origin"
+            allowfullscreen>
+          </iframe>
+        </div>
+        <div class="tutorial">
+          <h3>Convergence : intégrer une signature HTML</h3>
+          <iframe
+            src="https://www.youtube.com/embed/06vvhOC7wV4?si=wzgX31JODGv_QEMK"
+            title="YouTube video player"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            referrerpolicy="strict-origin-when-cross-origin"
+            allowfullscreen>
+          </iframe>
+        </div>
+
+        <div class="tutorial">
+          <h3>Gmail : créer une signature avec un code HTML</h3>
+          <iframe
+            src="https://www.youtube.com/embed/zPylB1eS-fk?si=mt5ho6T1Fkimfo7G"
+            title="YouTube video player"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            referrerpolicy="strict-origin-when-cross-origin"
+            allowfullscreen>
+          </iframe>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const SERVICE_CONFIG = {
+      "GIP-FCIP": {
+        logo: "http://ftp.dafpic-bordeaux.com/logos/logo-gip-fcip.jpg",
+        alt: "Logo GIP FCIP Aquitaine",
+        site: "https://www.gipfcip-aquitaine.fr/",
+        linkedin: "http://www.linkedin.com/in/gip-fcip-aquitaine-843509189",
+        twitterExtra: false
+      },
+      "SRAFPICA": {
+        logo: "http://ftp.dafpic-bordeaux.com/logos/sra-fpica-rectorat-bordeaux.jpg",
+        alt: "Logo SRAFPICA",
+        site: "https://bordeaux.srafpica-nouvelle-aquitaine.fr/",
+        linkedin: "https://www.linkedin.com/in/sra-fpica-site-bordeaux-32b689199/",
+        twitterExtra: true
+      },
+      "SRAFPICA RANA": {
+        logo: "http://ftp.dafpic-bordeaux.com/logos/logo-DRAFPICA.jpg",
+        alt: "Logo SRAFPICA",
+        site: "https://srafpica-nouvelle-aquitaine.fr/",
+        linkedin: "https://www.linkedin.com/in/sra-fpica-site-bordeaux-32b689199/",
+        twitterExtra: true
+      },
+      "CAFOC": {
+        logo: "http://ftp.dafpic-bordeaux.com/logos/logo-cafoc-bdx.jpg",
+        alt: "Logo CAFOC Bordeaux",
+        site: "https://cafoc-bordeaux.com/",
+        linkedin: "https://www.linkedin.com/in/cafoc-de-bordeaux-2882421a0/",
+        twitterExtra: false
+      },
+      "DAVA": {
+        logo: "http://ftp.dafpic-bordeaux.com/logos/logo-dava-bdx.jpg",
+        alt: "Logo DAVA Bordeaux",
+        site: "https://www.ac-bordeaux.fr/le-dispositif-academique-de-validation-des-acquis-dava-121696/",
+        linkedin: "https://fr.linkedin.com/in/dava-bordeaux-980886356",
+        twitterExtra: false
+      },
+      "DABM": {
+        logo: "http://ftp.dafpic-bordeaux.com/logos/logo-dabm.jpg",
+        alt: "Logo DABM",
+        site: "https://srafpica-nouvelle-aquitaine.fr/",
+        linkedin: "https://www.linkedin.com/in/sra-fpica-site-bordeaux-32b689199/",
+        twitterExtra: true
+      }
+    };
+
+    const form = document.getElementById("sigForm");
+    const elNom = document.getElementById("var_nom");
+    const elPoste = document.getElementById("var_poste");
+    const elBureau = document.getElementById("var_bureau");
+    const elTel = document.getElementById("var_tel");
+    const elMail = document.getElementById("var_mail");
+    const elService = document.getElementById("var_service");
+
+    const btnReset = document.getElementById("btnReset");
+    const btnValidate = document.getElementById("btnValidate");
+
+    const preview = document.getElementById("preview");
+    const codeOut = document.getElementById("codeOut");
+    const btnCopy = document.getElementById("btnCopy");
+    const btnDownload = document.getElementById("btnDownload");
+    const btnTutorials = document.getElementById("btnTutorials");
+    const tutorials = document.getElementById("tutorials");
+
+    const formStatus = document.getElementById("formStatus");
+    const copyStatus = document.getElementById("copyStatus");
+
+    let lastGeneratedSnippet = "";
+
+    function setStatus(type, msg) {
+      formStatus.classList.remove("ok", "err");
+      if (type === "ok") formStatus.classList.add("ok");
+      if (type === "err") formStatus.classList.add("err");
+      formStatus.textContent = msg;
+    }
+
+    function escapeHTML(str) {
+      return String(str)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function normalizeSpaces(str) {
+      return String(str).trim().replace(/\s+/g, " ");
+    }
+
+    // Phone: keep digits only, max 10, then format with spaces every 2 digits.
+    function formatPhoneDigits(digits) {
+      const d = digits.slice(0, 10);
+      const parts = [];
+      for (let i = 0; i < d.length; i += 2) parts.push(d.slice(i, i + 2));
+      return parts.join(" ").trim();
+    }
+
+    function getPhoneDigits(value) {
+      return String(value).replace(/\D/g, "").slice(0, 10);
+    }
+
+    function isValidPhoneDigits(d) {
+      return d.length === 10 && d.startsWith("0");
+    }
+
+    // Email rules (as requested): no accents, only letters/digits plus "@", "-", "."
+    // Local part and domain both limited to [a-z0-9.-], with exactly one "@"
+    function isValidEmailStrict(emailRaw) {
+      const email = String(emailRaw).trim();
+
+      // quick ASCII-only check (reject accents)
+      if (/[^\x00-\x7F]/.test(email)) return false;
+
+      // allowed characters only: letters/digits @ . -
+      if (!/^[A-Za-z0-9@.\-]+$/.test(email)) return false;
+
+      // must contain exactly one @
+      const atCount = (email.match(/@/g) || []).length;
+      if (atCount !== 1) return false;
+
+      const [local, domain] = email.split("@");
+      if (!local || !domain) return false;
+
+      // local: no leading/trailing dot/hyphen, no consecutive dots, min 1
+      if (!/^[A-Za-z0-9](?:[A-Za-z0-9.\-]*[A-Za-z0-9])?$/.test(local)) return false;
+      if (local.includes("..")) return false;
+
+      // domain: must contain at least one dot, labels 1+ chars, no consecutive dots
+      if (!/^[A-Za-z0-9](?:[A-Za-z0-9.\-]*[A-Za-z0-9])?$/.test(domain)) return false;
+      if (domain.includes("..")) return false;
+      if (!domain.includes(".")) return false;
+
+      // TLD 2+ letters (approx)
+      if (!/[A-Za-z]{2,}$/.test(domain)) return false;
+
+      return true;
+    }
+
+    function autocompleteEmailDomain() {
+      const raw = elMail.value;
+      const trimmed = raw.trim();
+
+      // Only attempt if an "@" exists
+      const atIndex = trimmed.indexOf("@");
+      if (atIndex === -1) return;
+
+      const left = trimmed.slice(0, atIndex);
+      const domainPart = trimmed.slice(atIndex + 1);
+
+      // If user starts typing "@ac..." or "@reg..."
+      if (/^ac/i.test(domainPart) && !/^ac-bordeaux\.fr$/i.test(domainPart)) {
+        elMail.value = left + "@ac-bordeaux.fr";
+      } else if (/^reg/i.test(domainPart) && !/^region-academique-nouvelle-aquitaine\.fr$/i.test(domainPart)) {
+        elMail.value = left + "@region-academique-nouvelle-aquitaine.fr";
+      }
+    }
+
+    function buildSignatureHTML({ nom, poste, bureau, telFormatted, mail, service }) {
+      const cfg = SERVICE_CONFIG[service];
+
+      const twitterHtml = cfg.twitterExtra
+        ? `<a style="font-family: Verdana, Arial, Helvetica, sans-serif;" title="Twitter" href="https://twitter.com/SRAFPICABDX" target="_blank"><img style="font-size: 14.4px;" src="http://ftp.dafpic-bordeaux.com/icones/twitter.png" alt="Twitter" width="30" height="30" /></a>`
+        : "";
+
+      // Keep the original signature structure (inline styles) - inject escaped user values
+      const snippet =
+`<table style="color: #222222; font-family: Arial, Helvetica, sans-serif; font-size: small;" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td style="font-family: Arial; margin: 0px; font-size: 12px; font-weight: bold;" colspan="3" width="100%">${escapeHTML(nom)}</td>
+</tr>
+<tr>
+<td style="font-family: Arial; margin: 0px; font-size: 11px;" colspan="3" width="100%">${escapeHTML(poste)}</td>
+</tr>
+<tr>
+<td style="font-family: Arial; margin: 0px; font-size: 11px;" colspan="3" width="100%">${escapeHTML(bureau)}</td>
+</tr>
+<tr>
+<td style="font-family: Roboto, RobotoDraft, Helvetica, Arial, sans-serif; margin: 0px;" colspan="3" width="100%">&nbsp;</td>
+</tr>
+<tr>
+<td style="font-family: Arial; margin: 0px; font-size: 11px;" colspan="3" width="100%">5, rue Joseph de Carayon-Latour, CS 81499, 33060 BORDEAUX Cedex</td>
+</tr>
+<tr>
+<td style="font-family: Arial; margin: 0px; font-size: 11px;" colspan="3" width="100%">T&eacute;l : ${escapeHTML(telFormatted)}  &nbsp;</td>
+</tr>
+<tr>
+<td colspan="3">&nbsp;</td>
+</tr>
+<tr>
+<td colspan="3"><img src="${escapeHTML(cfg.logo)}" alt="${escapeHTML(cfg.alt)}" width="291" height="90" /></td>
+</tr>
+<tr>
+<td style="font-family: Roboto, RobotoDraft, Helvetica, Arial, sans-serif; margin: 0px; text-align: center;" colspan="3" width="100%" height="20px">
+  <span style="color: #000000; font-family: Verdana, Arial, Helvetica, sans-serif; font-size: 14.4px;">
+    <a title="Mail" href="mailto:${escapeHTML(mail)}" target="_blank">
+      <img src="http://ftp.dafpic-bordeaux.com/icones/mail.png" alt="Mail" width="30" height="30" />
+    </a>
+    <a title="Site web" href="${escapeHTML(cfg.site)}" target="_blank" rel="noopener">
+      <img src="http://ftp.dafpic-bordeaux.com/icones/web.png" alt="Site web" width="30" height="30" />
+    </a>
+  </span>
+  ${twitterHtml}
+  <a style="font-family: Verdana, Arial, Helvetica, sans-serif; font-size: 14.4px;" title="Linkedin" href="${escapeHTML(cfg.linkedin)}" target="_blank" rel="noopener">
+    <img src="http://ftp.dafpic-bordeaux.com/icones/linkedin.png" alt="Linkedin" width="30" height="30" />
+  </a>
+  </td>
+        </tr>
+    </tbody>
+</table>
+<p><span style="font-family: arial, helvetica, sans-serif; font-size: 8pt; color: #008000;"><em>Pas &agrave; pas, agissons au quotidien pour pr&eacute;server notre environnement.&nbsp;</em></span><em><span style="font-family: arial, helvetica, sans-serif; font-size: 8pt; color: #008000;">N&rsquo;imprimez ce courriel et les documents joints que si n&eacute;cessaire.</span></em></p>`;
+
+      return snippet;
+    }
+
+    function validateAll() {
+      copyStatus.textContent = "";
+
+      const nom = normalizeSpaces(elNom.value);
+      const poste = normalizeSpaces(elPoste.value);
+      const bureau = normalizeSpaces(elBureau.value);
+      const service = elService.value;
+
+      const telDigits = getPhoneDigits(elTel.value);
+      const telFormatted = formatPhoneDigits(telDigits);
+
+      // Keep input formatted live
+      elTel.value = telFormatted;
+
+      // Email: trim, attempt autocomplete
+      elMail.value = elMail.value.trim();
+      autocompleteEmailDomain();
+      const mail = elMail.value.trim();
+
+      // Required checks
+      if (!nom || !poste || !bureau || !telFormatted || !mail || !service) {
+        return { ok: false, msg: "Veuillez renseigner tous les champs (obligatoires)." };
+      }
+
+      // Service config exists
+      if (!SERVICE_CONFIG[service]) {
+        return { ok: false, msg: "Service invalide - veuillez choisir une option de la liste." };
+      }
+
+      // Phone validation
+      if (!isValidPhoneDigits(telDigits)) {
+        return { ok: false, msg: "Téléphone invalide - 10 chiffres, commence par 0 (ex: 05 56 00 00 00)." };
+      }
+
+      // Email validation
+      if (!isValidEmailStrict(mail)) {
+        return { ok: false, msg: "Adresse mail invalide - autorisé: lettres/chiffres + @, -, . (sans accents ni autres caractères spéciaux)." };
+      }
+
+      return {
+        ok: true,
+        values: { nom, poste, bureau, telFormatted, mail, service }
+      };
+    }
+
+    function renderSignature(snippet) {
+      preview.innerHTML = snippet;
+    }
+
+    function enableOutputButtons(enabled) {
+      btnCopy.disabled = !enabled;
+      btnDownload.disabled = !enabled;
+    }
+
+    function generate() {
+      const check = validateAll();
+      if (!check.ok) {
+        setStatus("err", check.msg);
+        enableOutputButtons(false);
+        lastGeneratedSnippet = "";
+        codeOut.value = "";
+        preview.innerHTML = `<div class="preview-placeholder">La signature apparaîtra ici après validation.</div>`;
+        return;
+      }
+
+      const html = buildSignatureHTML(check.values);
+      lastGeneratedSnippet = html;
+
+      renderSignature(html);
+      codeOut.value = html;
+
+      enableOutputButtons(true);
+      setStatus("ok", "Signature générée avec succès - vous pouvez copier ou télécharger le HTML.");
+    }
+
+    // Live phone formatting while typing
+    elTel.addEventListener("input", () => {
+      const digits = getPhoneDigits(elTel.value);
+      elTel.value = formatPhoneDigits(digits);
+    });
+
+    // Email autocomplete
+    elMail.addEventListener("input", () => {
+      // small delay to feel natural
+      autocompleteEmailDomain();
+    });
+
+    // Optional: if service changes and a signature already exists, regenerate automatically
+    elService.addEventListener("change", () => {
+      if (lastGeneratedSnippet) generate();
+    });
+
+    btnValidate.addEventListener("click", generate);
+
+    btnReset.addEventListener("click", () => {
+      const ok = window.confirm("Confirmer la réinitialisation - toutes les valeurs seront effacées ?");
+      if (!ok) return;
+
+      form.reset();
+      lastGeneratedSnippet = "";
+      enableOutputButtons(false);
+      codeOut.value = "";
+      copyStatus.textContent = "";
+      tutorials.style.display = "none";
+      btnTutorials.textContent = "Afficher les tutoriels vidéo";
+      preview.innerHTML = `<div class="preview-placeholder">La signature apparaîtra ici après validation.</div>`;
+      setStatus("ok", "Réinitialisé - vous pouvez saisir de nouvelles informations.");
+      elNom.focus();
+    });
+
+    async function copyToClipboard(text) {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(text);
+        return true;
+      }
+      // Fallback
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      ta.style.position = "fixed";
+      ta.style.left = "-9999px";
+      document.body.appendChild(ta);
+      ta.select();
+      const success = document.execCommand("copy");
+      document.body.removeChild(ta);
+      return success;
+    }
+
+    btnCopy.addEventListener("click", async () => {
+      if (!lastGeneratedSnippet) return;
+      try {
+        const ok = await copyToClipboard(lastGeneratedSnippet);
+        copyStatus.textContent = ok ? "Copié dans le presse-papiers." : "Copie impossible - sélectionnez le code et copiez manuellement.";
+      } catch {
+        copyStatus.textContent = "Copie impossible - sélectionnez le code et copiez manuellement.";
+      }
+      setTimeout(() => (copyStatus.textContent = ""), 3500);
+    });
+
+    btnDownload.addEventListener("click", () => {
+      if (!lastGeneratedSnippet) return;
+
+      const fullDoc =
+`<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Signature</title>
+</head>
+<body>
+${lastGeneratedSnippet}
+</body>
+</html>`;
+
+      const blob = new Blob([fullDoc], { type: "text/html;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "signature.html";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+
+      URL.revokeObjectURL(url);
+    });
+
+    btnTutorials.addEventListener("click", () => {
+      const isOpen = tutorials.style.display === "block";
+      tutorials.style.display = isOpen ? "none" : "block";
+      btnTutorials.textContent = isOpen ? "Afficher les tutoriels vidéo" : "Masquer les tutoriels vidéo";
+    });
+  </script>
+</body>
+</html>
