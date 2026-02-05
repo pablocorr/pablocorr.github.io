@@ -1,0 +1,573 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Mes qualités - Sélecteur</title>
+
+  <style>
+    :root{
+      --bg: #fff6d6;
+      --card: rgba(255,255,255,.78);
+      --border: rgba(0,0,0,.12);
+      --text: #1f2937;
+      --muted: rgba(31,41,55,.72);
+
+      --btn: rgba(255,255,255,.9);
+      --btn-hover: rgba(255,255,255,1);
+      --btn-selected: #22c55e;
+      --btn-selected-hover: #16a34a;
+
+      --focus: rgba(34,197,94,.35);
+    }
+
+    *{ box-sizing: border-box; }
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      color: var(--text);
+      background: radial-gradient(1200px 800px at 20% 0%, rgba(255,255,255,.65), transparent 60%),
+                  radial-gradient(900px 600px at 90% 30%, rgba(255,255,255,.55), transparent 55%),
+                  var(--bg);
+      min-height: 100vh;
+    }
+
+    .wrap{
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 28px 18px 40px;
+    }
+
+    .header{
+      display:flex;
+      align-items:flex-end;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    h1{
+      margin:0;
+      font-size: 22px;
+      letter-spacing: .2px;
+    }
+
+    .counter{
+      font-size: 13px;
+      color: var(--muted);
+      background: rgba(255,255,255,.55);
+      border: 1px solid var(--border);
+      padding: 8px 10px;
+      border-radius: 12px;
+      white-space: nowrap;
+    }
+
+    .card{
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 16px;
+      backdrop-filter: blur(8px);
+      box-shadow: 0 8px 30px rgba(0,0,0,.06);
+    }
+
+    .hint{
+      margin: 0 0 14px;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.35;
+    }
+
+    /* Alignement amélioré des boutons */
+    .grid{
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 10px;
+      align-items: stretch;
+    }
+    @media (max-width: 980px){
+      .grid{ grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    }
+    @media (max-width: 760px){
+      .grid{ grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    }
+    @media (max-width: 520px){
+      .grid{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    .qbtn{
+      appearance:none;
+      border: 1px solid var(--border);
+      background: var(--btn);
+      color: var(--text);
+      padding: 10px 10px;
+      border-radius: 14px;
+      cursor:pointer;
+      font-weight: 650;
+      letter-spacing: .1px;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+
+      min-height: 46px;
+      width: 100%;
+      white-space: normal;
+      line-height: 1.15;
+
+      transition: transform .06s ease, background .15s ease, border-color .15s ease, color .15s ease;
+      user-select:none;
+    }
+    .qbtn:hover{ background: var(--btn-hover); }
+    .qbtn:active{ transform: scale(.99); }
+    .qbtn:focus-visible{
+      outline: 3px solid var(--focus);
+      outline-offset: 2px;
+    }
+    .qbtn.selected{
+      background: var(--btn-selected);
+      border-color: rgba(0,0,0,.08);
+      color: white;
+    }
+    .qbtn.selected:hover{ background: var(--btn-selected-hover); }
+
+    .bottom{
+      margin-top: 16px;
+      display:none;
+    }
+
+    .bottomHeader{
+      display:flex;
+      align-items:center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .bottomHeader h2{
+      margin:0;
+      font-size: 17px;
+    }
+
+    .pill{
+      font-size: 12px;
+      color: var(--muted);
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,.55);
+      padding: 6px 10px;
+      border-radius: 999px;
+      white-space: nowrap;
+    }
+
+    table{
+      width: 100%;
+      border-collapse: collapse;
+      overflow:hidden;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,.72);
+    }
+
+    thead th{
+      text-align:left;
+      font-size: 13px;
+      padding: 10px 12px;
+      background: rgba(255, 240, 180, .7);
+      border-bottom: 1px solid var(--border);
+    }
+
+    tbody td{
+      vertical-align: top;
+      padding: 10px 12px;
+      border-bottom: 1px solid rgba(0,0,0,.06);
+    }
+    tbody tr:last-child td{ border-bottom: none; }
+
+    .leftCell{
+      width: 32%;
+      font-weight: 750;
+    }
+
+    textarea{
+      width: 100%;
+      min-height: 54px;
+      resize: vertical;
+      padding: 10px 10px;
+      border-radius: 12px;
+      border: 1px solid rgba(0,0,0,.14);
+      background: rgba(255,255,255,.95);
+      font-family: inherit;
+      font-size: 14px;
+      line-height: 1.35;
+    }
+    textarea:focus{
+      outline: 3px solid var(--focus);
+      border-color: transparent;
+    }
+
+    .downloads{
+      margin-top: 14px;
+      padding-top: 12px;
+      border-top: 1px dashed rgba(0,0,0,.16);
+    }
+
+    .downloadsTitle{
+      font-weight: 800;
+      margin: 0 0 10px;
+      font-size: 15px;
+    }
+
+    .dlRow{
+      display:flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: flex-start;
+    }
+
+    .actionBtn{
+      appearance:none;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,.9);
+      color: var(--text);
+      padding: 11px 12px;
+      border-radius: 14px;
+      cursor:pointer;
+      font-weight: 750;
+      transition: background .15s ease, transform .06s ease;
+      min-height: 44px;
+    }
+    .actionBtn:hover{ background: rgba(255,255,255,1); }
+    .actionBtn:active{ transform: scale(.99); }
+
+    .copyWrap{
+      display:flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .note{
+      font-size: 12px;
+      color: var(--muted);
+      margin-left: 4px;
+    }
+
+    .toast{
+      position: fixed;
+      left: 50%;
+      bottom: 20px;
+      transform: translateX(-50%);
+      background: rgba(17,24,39,.92);
+      color: white;
+      padding: 10px 12px;
+      border-radius: 12px;
+      font-size: 13px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .18s ease, transform .18s ease;
+      box-shadow: 0 10px 30px rgba(0,0,0,.18);
+    }
+    .toast.show{
+      opacity: 1;
+      transform: translateX(-50%) translateY(-2px);
+    }
+
+    @media (max-width: 720px){
+      .header{ align-items:flex-start; flex-direction: column; }
+      .leftCell{ width: 40%; }
+    }
+
+    /* Impression - on n'affiche que le résultat */
+    @media print{
+      body{ background: white !important; }
+      .wrap{ padding: 0 !important; max-width: none !important; }
+      .card{ box-shadow: none !important; backdrop-filter: none !important; }
+      .header, .hint, .grid, .downloads { display: none !important; }
+      .bottom{ display: block !important; margin-top: 0 !important; }
+      textarea{ border: none !important; padding: 0 !important; min-height: auto !important; }
+      table{ border: 1px solid #999 !important; }
+      thead th{ background: #f2f2f2 !important; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <div class="header">
+      <h1>Sélecteur de qualités</h1>
+      <div class="counter" id="counter">0 sélectionnée - minimum 5</div>
+    </div>
+
+    <div class="card">
+      <p class="hint">
+        Clique sur les qualités qui te correspondent - elles deviennent vertes.
+        À partir de 5 qualités choisies, un tableau apparaît en bas pour décrire des situations concrètes.
+      </p>
+
+      <div class="grid" id="buttonsGrid"></div>
+
+      <div class="bottom" id="bottomZone">
+        <div class="bottomHeader">
+          <h2>Tableau de synthèse</h2>
+          <div class="pill" id="pillInfo">5 qualités minimum atteint</div>
+        </div>
+
+        <div id="exportArea">
+          <table>
+            <thead>
+              <tr>
+                <th>Mes qualités</th>
+                <th>Les situations concrètes correspondantes</th>
+              </tr>
+            </thead>
+            <tbody id="qualitiesTbody"></tbody>
+          </table>
+        </div>
+
+        <div class="downloads">
+          <p class="downloadsTitle">Télécharger mes qualités</p>
+          <div class="dlRow">
+            <button class="actionBtn" id="btnWord">Télécharger au format Word</button>
+            <button class="actionBtn" id="btnPrint">Imprimer</button>
+
+            <div class="copyWrap">
+              <button class="actionBtn" id="btnCopy">Copier dans le presse-papiers</button>
+              <div class="note">à copier dans un logiciel de traitement de texte si le téléchargement ne fonctionne pas</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const QUALITIES = [
+      "Adroit","Ambitieux","Appliqué","Attentif","Autonome","Avenant","Calme","Combatif",
+      "Consciencieux","Convaincant","Coopératif","Courtois","Créatif","Curieux","Débrouillard",
+      "Déterminé","Diplomate","Discret","Dynamique","Empathique","Enthousiaste","Flexible",
+      "Humble","Impliqué","Méthodique","Optimiste","Organisé","Patient","Persévérant","Polyvalent",
+      "Ponctuel","Pragmatique","Réfléchi","Responsable","Rigoureux","Volontaire"
+    ];
+
+    const grid = document.getElementById("buttonsGrid");
+    const counter = document.getElementById("counter");
+    const bottomZone = document.getElementById("bottomZone");
+    const tbody = document.getElementById("qualitiesTbody");
+    const pillInfo = document.getElementById("pillInfo");
+
+    const btnWord = document.getElementById("btnWord");
+    const btnPrint = document.getElementById("btnPrint");
+    const btnCopy = document.getElementById("btnCopy");
+    const toast = document.getElementById("toast");
+
+    const selected = new Set();
+    const situationByQuality = new Map();
+
+    function showToast(msg){
+      toast.textContent = msg;
+      toast.classList.add("show");
+      setTimeout(() => toast.classList.remove("show"), 1800);
+    }
+
+    function updateCounter(){
+      const n = selected.size;
+      if (n === 0) counter.textContent = "0 sélectionnée - minimum 5";
+      else if (n === 1) counter.textContent = "1 sélectionnée - minimum 5";
+      else counter.textContent = `${n} sélectionnées - minimum 5`;
+    }
+
+    function shouldShowBottom(){
+      return selected.size >= 5;
+    }
+
+    function renderBottom(){
+      const show = shouldShowBottom();
+      bottomZone.style.display = show ? "block" : "none";
+      pillInfo.textContent = show ? `${selected.size} qualités sélectionnées` : "Sélectionne au moins 5 qualités";
+      if (!show) return;
+
+      const list = QUALITIES.filter(q => selected.has(q));
+
+      tbody.innerHTML = "";
+      for (const q of list){
+        const tr = document.createElement("tr");
+
+        const tdLeft = document.createElement("td");
+        tdLeft.className = "leftCell";
+        tdLeft.textContent = q;
+
+        const tdRight = document.createElement("td");
+        const ta = document.createElement("textarea");
+        ta.placeholder = `Décris une situation concrète où tu as été ${q.toLowerCase()}...`;
+        ta.value = situationByQuality.get(q) || "";
+        ta.addEventListener("input", () => situationByQuality.set(q, ta.value));
+
+        tdRight.appendChild(ta);
+        tr.appendChild(tdLeft);
+        tr.appendChild(tdRight);
+        tbody.appendChild(tr);
+      }
+    }
+
+    function toggleQuality(q, btn){
+      if (selected.has(q)) {
+        selected.delete(q);
+        btn.classList.remove("selected");
+        btn.setAttribute("aria-pressed", "false");
+      } else {
+        selected.add(q);
+        btn.classList.add("selected");
+        btn.setAttribute("aria-pressed", "true");
+      }
+      updateCounter();
+      renderBottom();
+    }
+
+    function buildButtons(){
+      grid.innerHTML = "";
+      for (const q of QUALITIES){
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "qbtn";
+        btn.textContent = q;
+        btn.setAttribute("aria-pressed", "false");
+        btn.addEventListener("click", () => toggleQuality(q, btn));
+        grid.appendChild(btn);
+      }
+    }
+
+    function escapeHtml(s){
+      return String(s)
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
+    }
+
+    function buildExportTableHtml(){
+      const list = QUALITIES.filter(q => selected.has(q));
+      const rowsHtml = list.map(q => {
+        const situation = situationByQuality.get(q) || "";
+        return `
+          <tr>
+            <td style="border:1px solid #cfcfcf; padding:8px; font-weight:700; width:32%;">${escapeHtml(q)}</td>
+            <td style="border:1px solid #cfcfcf; padding:8px;">${escapeHtml(situation).replaceAll("\n","<br>")}</td>
+          </tr>
+        `;
+      }).join("");
+
+      return `
+        <table style="width:100%; border-collapse:collapse; font-family: Arial, sans-serif; font-size:11pt;">
+          <thead>
+            <tr>
+              <th style="border:1px solid #cfcfcf; padding:8px; text-align:left; background:#fff0b4;">Mes qualités</th>
+              <th style="border:1px solid #cfcfcf; padding:8px; text-align:left; background:#fff0b4;">Les situations concrètes correspondantes</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rowsHtml || ""}
+          </tbody>
+        </table>
+      `;
+    }
+
+    function buildPlainText(){
+      const list = QUALITIES.filter(q => selected.has(q));
+      return list.map(q => {
+        const situation = (situationByQuality.get(q) || "").trim();
+        return `- ${q}\n  ${situation ? situation : "(à compléter)"}`;
+      }).join("\n\n");
+    }
+
+    async function copyRich(){
+      if (!shouldShowBottom()){
+        showToast("Sélectionne au moins 5 qualités.");
+        return;
+      }
+
+      const htmlTable = buildExportTableHtml();
+      const plain = buildPlainText();
+
+      try{
+        if (navigator.clipboard && window.ClipboardItem) {
+          const item = new ClipboardItem({
+            "text/html": new Blob([htmlTable], { type: "text/html" }),
+            "text/plain": new Blob([plain], { type: "text/plain" })
+          });
+          await navigator.clipboard.write([item]);
+          showToast("Tableau copié (format enrichi).");
+          return;
+        }
+      } catch(e){
+        // fallback ci-dessous
+      }
+
+      const ta = document.createElement("textarea");
+      ta.value = plain;
+      ta.style.position = "fixed";
+      ta.style.left = "-9999px";
+      ta.style.top = "-9999px";
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand("copy");
+      ta.remove();
+      showToast("Copié (texte brut).");
+    }
+
+    function downloadWord(){
+      if (!shouldShowBottom()){
+        showToast("Sélectionne au moins 5 qualités.");
+        return;
+      }
+
+      const htmlTable = buildExportTableHtml();
+      const doc = `
+        <!doctype html>
+        <html lang="fr">
+          <head>
+            <meta charset="UTF-8">
+            <title>Mes qualités</title>
+          </head>
+          <body>
+            <h2 style="font-family: Arial, sans-serif;">Mes qualités</h2>
+            ${htmlTable}
+          </body>
+        </html>
+      `.trim();
+
+      const blob = new Blob([doc], { type: "application/msword;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "mes-qualites.doc";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+
+      URL.revokeObjectURL(url);
+      showToast("Téléchargement Word lancé.");
+    }
+
+    function doPrint(){
+      if (!shouldShowBottom()){
+        showToast("Sélectionne au moins 5 qualités.");
+        return;
+      }
+      // On imprime la page avec les règles @media print (qui masquent tout sauf le tableau)
+      window.print();
+    }
+
+    btnCopy.addEventListener("click", copyRich);
+    btnWord.addEventListener("click", downloadWord);
+    btnPrint.addEventListener("click", doPrint);
+
+    buildButtons();
+    updateCounter();
+    renderBottom();
+  </script>
+</body>
+</html>
