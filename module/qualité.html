@@ -564,7 +564,7 @@
 
         const tdRight = document.createElement("td");
         const ta = document.createElement("textarea");
-        ta.placeholder = `Décris une situation concrète où tu as été ${q.toLowerCase()}...`;
+        ta.placeholder = `Décrivez une situation concrète où vous avez été ${q.toLowerCase()}...`;
         ta.value = situationByQuality.get(q) || "";
         ta.addEventListener("input", () => situationByQuality.set(q, ta.value));
 
