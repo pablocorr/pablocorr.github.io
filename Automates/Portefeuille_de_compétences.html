@@ -1,0 +1,861 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Mon portefeuille de compétences</title>
+
+  <!-- PDF export (HTML -> PDF) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+  <style>
+    :root{
+      --blue:#0B5394;
+      --blue-light:#1E88E5;
+      --bg:#f8f9fd;
+      --card:#ffffff;
+      --muted:#64748b;
+      --text:#1e293b;
+      --line:rgba(15,23,42,.1);
+      --danger:#dc2626;
+      --ok:#16a34a;
+      --shadow: 0 1px 3px rgba(0,0,0,.04), 0 8px 24px rgba(11,83,148,.08);
+      --shadow-lg: 0 4px 6px rgba(0,0,0,.05), 0 20px 60px rgba(11,83,148,.12);
+      --radius:16px;
+      --radius2:12px;
+      font-synthesis-weight:none;
+    }
+
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background:
+        radial-gradient(ellipse 1200px 600px at 15% 0%, rgba(11,83,148,.12), transparent 65%),
+        radial-gradient(ellipse 1000px 500px at 85% 20%, rgba(22,163,74,.08), transparent 60%),
+        linear-gradient(180deg, #f8f9fd 0%, #ffffff 100%);
+      background-attachment: fixed;
+      color:var(--text);
+      line-height:1.6;
+    }
+
+    header{
+      position:sticky;
+      top:0;
+      z-index:10;
+      backdrop-filter: blur(16px) saturate(180%);
+      background: rgba(255,255,255,.85);
+      border-bottom:1px solid var(--line);
+      box-shadow: 0 1px 3px rgba(0,0,0,.03);
+    }
+
+    .wrap{
+      max-width:1200px;
+      margin:0 auto;
+      padding:20px 24px;
+    }
+
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:16px;
+    }
+
+    .titleBlock{
+      flex:1;
+      text-align:center;
+    }
+
+    h1{
+      margin:0;
+      font-size:28px;
+      letter-spacing:-.3px;
+      font-weight:700;
+      background: linear-gradient(135deg, var(--blue) 0%, var(--blue-light) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .btn{
+      appearance:none;
+      border:1px solid var(--line);
+      background: #ffffff;
+      color:var(--text);
+      padding:11px 16px;
+      border-radius:10px;
+      cursor:pointer;
+      font-weight:600;
+      font-size:14px;
+      letter-spacing:-.1px;
+      transition: all .2s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 1px 2px rgba(0,0,0,.05);
+      user-select:none;
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      line-height:1.4;
+      white-space:nowrap;
+    }
+    .btn:hover{ 
+      border-color: rgba(11,83,148,.25);
+      box-shadow: 0 2px 8px rgba(11,83,148,.15);
+      transform: translateY(-1px);
+    }
+    .btn:active{ 
+      transform: translateY(0);
+      box-shadow: 0 1px 2px rgba(0,0,0,.05);
+    }
+
+    .btn.secondary{
+      background: rgba(248,249,253,.9);
+      border-color: rgba(15,23,42,.12);
+    }
+    .btn.secondary:hover{
+      background: #ffffff;
+      border-color: rgba(11,83,148,.2);
+    }
+    
+    .btn.danger{
+      border-color: rgba(220,38,38,.2);
+      background: #fef2f2;
+      color:#991b1b;
+    }
+    .btn.danger:hover{
+      border-color: rgba(220,38,38,.3);
+      background: #fee2e2;
+      box-shadow: 0 2px 8px rgba(220,38,38,.15);
+    }
+    
+    .btn.ok{
+      border-color: rgba(22,163,74,.2);
+      background: #f0fdf4;
+      color:#15803d;
+    }
+    .btn.ok:hover{
+      border-color: rgba(22,163,74,.3);
+      background: #dcfce7;
+      box-shadow: 0 2px 8px rgba(22,163,74,.15);
+    }
+
+    main .card{
+      background: var(--card);
+      border:1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-lg);
+      overflow:hidden;
+      margin-bottom: 24px;
+    }
+
+    .card-head{
+      padding:16px 20px;
+      border-bottom:1px solid var(--line);
+      background: linear-gradient(180deg, rgba(255,255,255,1) 0%, rgba(248,249,253,.5) 100%);
+    }
+
+    .note{
+      color:var(--muted);
+      font-size:14px;
+      margin:0;
+      line-height:1.5;
+    }
+
+    .content{
+      padding:20px 24px 24px 24px;
+    }
+
+    .table-wrap{
+      overflow:auto;
+      border:1px solid var(--line);
+      border-radius: 12px;
+      background: #ffffff;
+      box-shadow: 0 1px 3px rgba(0,0,0,.04);
+    }
+
+    table{
+      width:100%;
+      border-collapse:collapse;
+      min-width:900px;
+    }
+
+    thead th{
+      background: linear-gradient(180deg, var(--blue) 0%, #094a7a 100%);
+      color:#fff;
+      font-weight:700;
+      text-align:center;
+      padding:14px 12px;
+      border:1px solid rgba(255,255,255,.15);
+      font-size:12px;
+      letter-spacing:.2px;
+      text-transform: uppercase;
+      vertical-align: middle;
+    }
+
+    tbody td{
+      border:1px solid var(--line);
+      vertical-align:top;
+      background: #ffffff;
+      transition: background-color .2s ease;
+    }
+    
+    tbody tr:hover td{
+      background: rgba(11,83,148,.02);
+    }
+
+    .cell{ padding:10px; }
+
+    textarea, select{
+      width:100%;
+      border:1.5px solid rgba(15,23,42,.12);
+      background: #ffffff;
+      color:var(--text);
+      border-radius: 8px;
+      padding:10px 12px;
+      font-size:14px;
+      font-family: inherit;
+      outline:none;
+      transition: all .2s ease;
+    }
+
+    textarea{
+      resize:none;
+      min-height:44px;
+      line-height:1.5;
+    }
+
+    textarea:focus, select:focus{
+      border-color: var(--blue);
+      box-shadow: 0 0 0 3px rgba(11,83,148,.1);
+      background: rgba(11,83,148,.01);
+    }
+
+    select{ 
+      cursor:pointer;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Cpath fill='%231e293b' d='M4.427 6.427l3.396 3.396a.25.25 0 00.354 0l3.396-3.396A.25.25 0 0011.396 6H4.604a.25.25 0 00-.177.427z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 10px center;
+      padding-right: 36px;
+    }
+
+    .actions{
+      display:flex;
+      gap:8px;
+      align-items:center;
+      justify-content:center;
+      padding:10px;
+      min-width:150px;
+    }
+
+    .footer-actions{
+      display:flex;
+      flex-wrap:wrap;
+      gap:12px;
+      justify-content:space-between;
+      margin-top:20px;
+      align-items:center;
+    }
+
+    .left-actions, .right-actions{
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+
+    .download-area{
+      display:flex;
+      gap:12px;
+      align-items:center;
+      flex-wrap:wrap;
+      padding:14px 16px;
+      border:2px dashed rgba(11,83,148,.2);
+      border-radius:12px;
+      background: linear-gradient(135deg, rgba(11,83,148,.04) 0%, rgba(22,163,74,.03) 100%);
+    }
+    .download-area strong{
+      font-size:14px;
+      color:var(--blue);
+      letter-spacing:-.1px;
+      font-weight:600;
+    }
+
+    /* Preview look */
+    .preview-sheet{
+      background:#ffffff;
+      color:#0f172a;
+      border-radius:12px;
+      padding:20px;
+      border:1px solid var(--line);
+      box-shadow: 0 1px 3px rgba(0,0,0,.04);
+    }
+    .preview-title{
+      margin:0 0 12px 0;
+      font-size:18px;
+      font-weight:700;
+      color:var(--text);
+      letter-spacing:-.2px;
+    }
+    .preview-sub{
+      margin:0 0 16px 0;
+      font-size:13px;
+      color:var(--muted);
+    }
+
+    /* Export table */
+    .export-table{
+      width:100%;
+      border-collapse:collapse;
+      font-family: Arial, sans-serif;
+      font-size:10pt;
+      table-layout:fixed;
+    }
+    .export-table th, .export-table td{
+      border:1px solid #000000;
+      padding:6px 6px;
+      vertical-align:top;
+      word-wrap:break-word;
+    }
+    .export-table thead th{
+      background: var(--blue);
+      color:#ffffff;
+      text-align:center;
+      font-weight:700;
+    }
+    .export-table td{
+      text-align:center;
+      background:#ffffff;
+    }
+
+    .hidden{ display:none !important; }
+
+    @media (max-width: 680px){
+      table{ min-width:980px; }
+      h1{ font-size:24px; }
+      .wrap{ padding: 16px 16px; }
+    }
+
+    /* Export-only: hide controls in PDF capture */
+    .no-export{ display:block; }
+    .exporting .no-export{ display:none !important; }
+
+    /* Petites améliorations visuelles */
+    ::selection {
+      background: rgba(11,83,148,.2);
+      color: var(--text);
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    main .card {
+      animation: fadeIn 0.4s ease-out;
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <div class="wrap topbar">
+      <div class="titleBlock">
+        <h1>📋 Mon portefeuille de compétences</h1>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div class="wrap">
+      <!-- EDIT VIEW -->
+      <div id="editView">
+        <div class="card">
+          <div class="card-head">
+            <p class="note">
+              ✨ Remplissez le tableau ci-dessous pour décrire vos expériences et compétences. 
+              Vous pourrez ensuite exporter votre portefeuille au format Word, Excel ou PDF.
+            </p>
+          </div>
+
+          <div class="content">
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th rowspan="2" style="width:26%;">Liste de mes expériences</th>
+                    <th colspan="2" style="width:46%;">Compétences développées</th>
+                    <th rowspan="2" style="width:28%;">Preuves de mes compétences</th>
+                    <th rowspan="2" class="no-export" style="width:auto;">Lignes</th>
+                  </tr>
+                  <tr>
+                    <th>Compétences</th>
+                    <th>Degré de maîtrise</th>
+                  </tr>
+                </thead>
+                <tbody id="tbodyEdit"></tbody>
+              </table>
+            </div>
+
+            <div class="footer-actions">
+              <div class="left-actions">
+                <button class="btn ok" id="btnFinish">✓ Terminer et prévisualiser</button>
+              </div>
+              <div class="right-actions">
+                <button class="btn danger" id="btnReset">🗑️ Tout supprimer</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PREVIEW / EXPORT VIEW -->
+      <div id="previewView" class="hidden">
+        <div class="card">
+          <div class="card-head">
+            <p class="note">
+              👀 Vérifiez votre portefeuille ci-dessous, puis téléchargez-le dans le format de votre choix.
+            </p>
+          </div>
+
+          <div class="content">
+            <!-- Hidden container for export -->
+            <div id="previewExport" class="preview-sheet">
+              <h2 class="preview-title">Mon portefeuille de compétences</h2>
+              <p class="preview-sub" id="previewMeta"></p>
+
+              <table class="export-table">
+                <thead>
+                  <tr>
+                    <th rowspan="2" style="width:26%;">Liste de mes expériences</th>
+                    <th colspan="2" style="width:46%;">Compétences développées</th>
+                    <th rowspan="2" style="width:28%;">Preuves de mes compétences</th>
+                  </tr>
+                  <tr>
+                    <th>Compétences</th>
+                    <th>Degré de maîtrise</th>
+                  </tr>
+                </thead>
+                <tbody id="tbodyPreview"></tbody>
+              </table>
+            </div>
+
+            <div class="footer-actions">
+              <div class="left-actions">
+                <button class="btn secondary" id="btnBack">← Retour à l'édition</button>
+              </div>
+              <div class="right-actions">
+                <div class="download-area">
+                  <strong>💾 Télécharger :</strong>
+                  <button class="btn secondary" id="btnWord">Word (.doc)</button>
+                  <button class="btn secondary" id="btnExcel">Excel (.xlsx)</button>
+                  <button class="btn secondary" id="btnPdf">PDF</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const STORAGE_KEY = "portfolio_competences_data";
+    const MASTERIES = ["Débutant", "Junior", "Confirmé", "Expert"];
+
+    const el = {
+      editView: document.getElementById("editView"),
+      previewView: document.getElementById("previewView"),
+      tbodyEdit: document.getElementById("tbodyEdit"),
+      tbodyPreview: document.getElementById("tbodyPreview"),
+      previewMeta: document.getElementById("previewMeta"),
+      previewExport: document.getElementById("previewExport"),
+      btnFinish: document.getElementById("btnFinish"),
+      btnBack: document.getElementById("btnBack"),
+      btnWord: document.getElementById("btnWord"),
+      btnExcel: document.getElementById("btnExcel"),
+      btnPdf: document.getElementById("btnPdf"),
+      btnReset: document.getElementById("btnReset")
+    };
+
+    let state = { rows: [] };
+    let renderScheduled = false;
+    let focusCapture = null;
+
+    function blankRow(){
+      return { experience: "", competence: "", maitrise: "Débutant", preuve: "" };
+    }
+
+    function load(){
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if(!raw){
+        state.rows = [blankRow()];
+        return;
+      }
+
+      try{
+        const parsed = JSON.parse(raw);
+        if(Array.isArray(parsed) && parsed.length > 0){
+          state.rows = parsed;
+        }else{
+          state.rows = [blankRow()];
+        }
+      }catch(e){
+        state.rows = [blankRow()];
+      }
+    }
+
+    function save(){
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state.rows));
+    }
+
+    function escapeHTML(text){
+      const div = document.createElement("div");
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    function safeText(text){
+      if(!text) return "";
+      return text.trim();
+    }
+
+    function captureFocus(){
+      const active = document.activeElement;
+      if(!active || !active.hasAttribute("data-row")) return;
+
+      const row = Number(active.getAttribute("data-row"));
+      const field = active.getAttribute("data-field");
+      const start = active.selectionStart;
+      const end = active.selectionEnd;
+
+      focusCapture = { row, field, start, end };
+    }
+
+    function restoreFocus(){
+      if(!focusCapture) return;
+
+      const { row, field, start, end } = focusCapture;
+      const elem = el.tbodyEdit.querySelector(`[data-row="${row}"][data-field="${field}"]`);
+      if(!elem) return;
+
+      elem.focus();
+      if(typeof elem.setSelectionRange === "function"){
+        elem.setSelectionRange(start, end);
+      }
+      focusCapture = null;
+    }
+
+    function autoSizeTextareas(container){
+      container.querySelectorAll("textarea").forEach(ta => {
+        ta.style.height = "0px";
+        ta.style.height = Math.max(44, ta.scrollHeight) + "px";
+      });
+    }
+
+    function scheduleRender(){
+      if(renderScheduled) return;
+      renderScheduled = true;
+      requestAnimationFrame(() => {
+        renderScheduled = false;
+        renderEdit();
+        autoSizeTextareas(el.tbodyEdit);
+        restoreFocus();
+      });
+    }
+
+    function renderEdit(){
+      const rowsHTML = state.rows.map((r, i) => {
+        const masteryOptions = MASTERIES.map(m => {
+          const sel = (r.maitrise === m) ? "selected" : "";
+          return `<option value="${escapeHTML(m)}" ${sel}>${escapeHTML(m)}</option>`;
+        }).join("");
+
+        return `
+          <tr>
+            <td><div class="cell"><textarea data-row="${i}" data-field="experience"></textarea></div></td>
+            <td><div class="cell"><textarea data-row="${i}" data-field="competence"></textarea></div></td>
+            <td><div class="cell">
+              <select data-row="${i}" data-field="maitrise" aria-label="Degré de maîtrise">
+                ${masteryOptions}
+              </select>
+            </div></td>
+            <td><div class="cell"><textarea data-row="${i}" data-field="preuve"></textarea></div></td>
+            <td class="no-export">
+              <div class="actions">
+                <button class="btn secondary" data-action="add" data-index="${i}">Ajouter</button>
+                <button class="btn danger" data-action="remove" data-index="${i}">Supprimer</button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join("");
+
+      el.tbodyEdit.innerHTML = rowsHTML;
+
+      state.rows.forEach((r, i) => {
+        const exp = el.tbodyEdit.querySelector(`[data-row="${i}"][data-field="experience"]`);
+        const comp = el.tbodyEdit.querySelector(`[data-row="${i}"][data-field="competence"]`);
+        const prv = el.tbodyEdit.querySelector(`[data-row="${i}"][data-field="preuve"]`);
+        const mai = el.tbodyEdit.querySelector(`[data-row="${i}"][data-field="maitrise"]`);
+        if(exp) exp.value = r.experience || "";
+        if(comp) comp.value = r.competence || "";
+        if(prv) prv.value = r.preuve || "";
+        if(mai) mai.value = r.maitrise || "Débutant";
+      });
+    }
+
+    function rowsForPreview(){
+      return state.rows.length ? state.rows : [blankRow()];
+    }
+
+    function renderPreview(){
+      const rows = rowsForPreview();
+      el.tbodyPreview.innerHTML = rows.map(r => `
+        <tr>
+          <td>${escapeHTML(r.experience)}</td>
+          <td>${escapeHTML(r.competence)}</td>
+          <td>${escapeHTML(r.maitrise)}</td>
+          <td>${escapeHTML(r.preuve)}</td>
+        </tr>
+      `).join("");
+
+      const now = new Date();
+      const dateStr = now.toLocaleDateString("fr-FR", { year:"numeric", month:"2-digit", day:"2-digit" });
+      el.previewMeta.textContent = `Export généré le ${dateStr}.`;
+    }
+
+    function setMode(mode){
+      if(mode === "preview"){
+        el.editView.classList.add("hidden");
+        el.previewView.classList.remove("hidden");
+        renderPreview();
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }else{
+        el.previewView.classList.add("hidden");
+        el.editView.classList.remove("hidden");
+        scheduleRender();
+      }
+    }
+
+    function addRow(afterIndex){
+      const idx = Math.max(-1, Math.min(afterIndex, state.rows.length - 1));
+      state.rows.splice(idx + 1, 0, blankRow());
+      save();
+      scheduleRender();
+    }
+
+    function removeRow(index){
+      if(state.rows.length <= 1) return;
+      const idx = Math.max(0, Math.min(index, state.rows.length - 1));
+      state.rows.splice(idx, 1);
+      save();
+      scheduleRender();
+    }
+
+    function updateCell(rowIndex, field, value){
+      if(!state.rows[rowIndex]) return;
+      if(field === "maitrise"){
+        state.rows[rowIndex].maitrise = MASTERIES.includes(value) ? value : "Débutant";
+      }else{
+        state.rows[rowIndex][field] = safeText(value);
+      }
+      save();
+      scheduleRender();
+    }
+
+    function filenameBase(){
+      const d = new Date();
+      const y = d.getFullYear();
+      const m = String(d.getMonth()+1).padStart(2,"0");
+      const day = String(d.getDate()).padStart(2,"0");
+      return `mon_portefeuille_de_competences_${y}-${m}-${day}`;
+    }
+
+    function buildExportHTMLDocument(innerBodyHTML){
+      const styles = `
+        <style>
+          body{ font-family: Arial, sans-serif; }
+          h1{ font-size:16pt; margin:0 0 8px 0; }
+          p.meta{ font-size:10pt; margin:0 0 12px 0; color:#334155; }
+          table{ width:100%; border-collapse:collapse; table-layout:fixed; font-size:10pt; }
+          th, td{ border:1px solid #000; padding:6px 6px; vertical-align:top; word-wrap:break-word; }
+          thead th{ background:#0B5394; color:#fff; text-align:center; font-weight:700; }
+          td{ text-align:center; }
+        </style>
+      `;
+      return `
+        <!doctype html>
+        <html lang="fr">
+          <head>
+            <meta charset="utf-8" />
+            ${styles}
+          </head>
+          <body>
+            ${innerBodyHTML}
+          </body>
+        </html>
+      `;
+    }
+
+    function buildExportTableHTML(rows){
+      const body = rows.map(r => `
+        <tr>
+          <td>${escapeHTML(r.experience)}</td>
+          <td>${escapeHTML(r.competence)}</td>
+          <td>${escapeHTML(r.maitrise)}</td>
+          <td>${escapeHTML(r.preuve)}</td>
+        </tr>
+      `).join("");
+
+      return `
+        <table>
+          <thead>
+            <tr>
+              <th rowspan="2" style="width:26%;">Liste de mes expériences</th>
+              <th colspan="2" style="width:46%;">Compétences développées</th>
+              <th rowspan="2" style="width:28%;">Preuves de mes compétences</th>
+            </tr>
+            <tr>
+              <th>Compétences</th>
+              <th>Degré de maîtrise</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${body}
+          </tbody>
+        </table>
+      `;
+    }
+
+    function downloadBlob(blob, filename){
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1500);
+    }
+
+    function exportWord(){
+      const rows = rowsForPreview();
+      const meta = el.previewMeta.textContent || "";
+      const table = buildExportTableHTML(rows);
+      const html = buildExportHTMLDocument(`
+        <h1>Mon portefeuille de compétences</h1>
+        <p class="meta">${escapeHTML(meta)}</p>
+        ${table}
+      `);
+
+      const blob = new Blob(["\ufeff", html], { type: "application/msword" });
+      downloadBlob(blob, `${filenameBase()}.doc`);
+    }
+
+    function exportExcel(){
+      // NOTE: this is not a "true" XLSX file structure - it's an HTML table saved with .xlsx extension
+      // (works for many uses because Excel can open it, but it may show a warning depending on settings).
+      const rows = rowsForPreview();
+      const table = buildExportTableHTML(rows);
+
+      const html = `
+        <!doctype html>
+        <html lang="fr">
+          <head><meta charset="utf-8" /></head>
+          <body>${table}</body>
+        </html>
+      `;
+      const blob = new Blob(
+        ["\ufeff", html],
+        { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }
+      );
+      downloadBlob(blob, `${filenameBase()}.xlsx`);
+    }
+
+    async function exportPDF(){
+      document.body.classList.add("exporting");
+
+      const opt = {
+        margin:       10,
+        filename:     `${filenameBase()}.pdf`,
+        image:        { type: "jpeg", quality: 0.98 },
+        html2canvas:  { scale: 2, useCORS: true },
+        jsPDF:        { unit: "mm", format: "a4", orientation: "landscape" }
+      };
+
+      try{
+        await html2pdf().set(opt).from(el.previewExport).save();
+      }finally{
+        document.body.classList.remove("exporting");
+      }
+    }
+
+    function bindEvents(){
+      el.tbodyEdit.addEventListener("input", (e) => {
+        const t = e.target;
+        const row = t.getAttribute("data-row");
+        const field = t.getAttribute("data-field");
+        if(row === null || field === null) return;
+
+        captureFocus();
+        updateCell(Number(row), field, t.value);
+      });
+
+      el.tbodyEdit.addEventListener("change", (e) => {
+        const t = e.target;
+        const row = t.getAttribute("data-row");
+        const field = t.getAttribute("data-field");
+        if(row === null || field === null) return;
+
+        captureFocus();
+        updateCell(Number(row), field, t.value);
+      });
+
+      el.tbodyEdit.addEventListener("click", (e) => {
+        const btn = e.target.closest("button");
+        if(!btn) return;
+
+        const action = btn.getAttribute("data-action");
+        const index = Number(btn.getAttribute("data-index"));
+
+        if(action === "add"){
+          captureFocus();
+          addRow(index);
+        }
+        if(action === "remove"){
+          captureFocus();
+          removeRow(index);
+        }
+      });
+
+      el.btnFinish.addEventListener("click", () => setMode("preview"));
+      el.btnBack.addEventListener("click", () => setMode("edit"));
+
+      el.btnWord.addEventListener("click", exportWord);
+      el.btnExcel.addEventListener("click", exportExcel);
+      el.btnPdf.addEventListener("click", exportPDF);
+
+      el.btnReset.addEventListener("click", () => {
+        const ok = confirm("Êtes-vous sûr de vouloir tout supprimer ?");
+        if(!ok) return;
+        localStorage.removeItem(STORAGE_KEY);
+        location.reload();
+      });
+
+      el.tbodyEdit.addEventListener("input", (e) => {
+        if(e.target && e.target.tagName === "TEXTAREA"){
+          const a = e.target;
+          a.style.height = "0px";
+          a.style.height = Math.max(44, a.scrollHeight) + "px";
+        }
+      });
+    }
+
+    load();
+    renderEdit();
+    autoSizeTextareas(el.tbodyEdit);
+    bindEvents();
+  </script>
+</body>
+</html>
