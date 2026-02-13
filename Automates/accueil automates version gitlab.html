@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Automates Pôle IIRD</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <style>
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Roboto, Arial, sans-serif;
+      background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+      min-height: 100vh;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 900px;
+      padding: 40px 20px;
+      text-align: center;
+    }
+
+    h1 {
+      margin-bottom: 10px;
+      font-size: 2.5rem;
+      letter-spacing: 1px;
+    }
+
+    .subtitle {
+      opacity: 0.8;
+      margin-bottom: 40px;
+    }
+
+    .buttons {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 20px;
+    }
+
+    .btn {
+      background: rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      padding: 18px;
+      border-radius: 12px;
+      color: #fff;
+      text-decoration: none;
+      font-weight: 500;
+      transition: all 0.25s ease;
+      backdrop-filter: blur(8px);
+    }
+
+    .btn:hover {
+      background: rgba(255, 255, 255, 0.25);
+      transform: translateY(-4px);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+    }
+
+    .loading,
+    .error {
+      opacity: 0.8;
+      font-size: 1.1rem;
+    }
+
+    footer {
+      margin-top: 50px;
+      font-size: 0.85rem;
+      opacity: 0.6;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>Automates Pôle IIRD</h1>
+    <div class="subtitle">
+      Accès aux automates HTML disponibles
+    </div>
+
+    <div id="content" class="loading">
+      Chargement des automates...
+    </div>
+
+    <footer>
+      © Automates HTML - GitHub Pages
+    </footer>
+  </div>
+
+<script>
+  const gitlabBase = "https://forge.apps.education.fr";
+  const projectPath = "polerechercheetdeveloppementdafpic/automates-polerd";
+  const branch = "master";
+  const rootFolder = "public";
+
+  const contentDiv = document.getElementById("content");
+
+  async function loadAutomates() {
+    try {
+      const encodedProject = encodeURIComponent(projectPath);
+
+      const apiUrl =
+        `${gitlabBase}/api/v4/projects/${encodedProject}/repository/tree` +
+        `?ref=${branch}&path=${rootFolder}&recursive=true&per_page=100`;
+
+      const response = await fetch(apiUrl);
+      const files = await response.json();
+
+      const htmlFiles = files.filter(
+        f => f.type === "blob" && f.name.endsWith(".html")
+      );
+
+      if (!htmlFiles.length) {
+        contentDiv.innerHTML =
+          "<div class='error'>Aucun automate trouvé.</div>";
+        return;
+      }
+
+      const container = document.createElement("div");
+      container.className = "buttons";
+
+      htmlFiles.forEach(file => {
+        const rawName = file.name
+          .replace(".html", "")
+          .replace(/_/g, " ");
+
+        const link = document.createElement("a");
+        link.className = "btn";
+        link.href =
+          `${gitlabBase}/${projectPath}/-/raw/${branch}/${file.path}`;
+
+        link.textContent = rawName
+          .split(" ")
+          .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+          .join(" ");
+
+        container.appendChild(link);
+      });
+
+      contentDiv.replaceWith(container);
+    } catch (e) {
+      console.error(e);
+      contentDiv.innerHTML =
+        "<div class='error'>Erreur de chargement des automates.</div>";
+    }
+  }
+
+  loadAutomates();
+</script>
+
+
+</body>
+</html>

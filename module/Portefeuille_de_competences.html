@@ -467,6 +467,7 @@
       editView: document.getElementById("editView"),
       previewView: document.getElementById("previewView"),
       tbodyEdit: document.getElementById("tbodyEdit"),
+      editTableWrap: document.querySelector("#editView .table-wrap"),
       tbodyPreview: document.getElementById("tbodyPreview"),
       previewMeta: document.getElementById("previewMeta"),
       previewExport: document.getElementById("previewExport"),
@@ -479,8 +480,10 @@
     };
 
     let state = { rows: [] };
-    let renderScheduled = false;
-    let focusCapture = null;
+
+    // Focus handling - Chrome-safe
+    let lastSnapshot = null;
+    let isComposing = false;
 
     function blankRow(){
       return { experience: "", competence: "", maitrise: "Débutant", preuve: "" };
@@ -496,7 +499,12 @@
       try{
         const parsed = JSON.parse(raw);
         if(Array.isArray(parsed) && parsed.length > 0){
-          state.rows = parsed;
+          state.rows = parsed.map(r => ({
+            experience: (r?.experience ?? "").toString(),
+            competence: (r?.competence ?? "").toString(),
+            maitrise: MASTERIES.includes(r?.maitrise) ? r.maitrise : "Débutant",
+            preuve: (r?.preuve ?? "").toString()
+          }));
         }else{
           state.rows = [blankRow()];
         }
@@ -511,56 +519,101 @@
 
     function escapeHTML(text){
       const div = document.createElement("div");
-      div.textContent = text;
+      div.textContent = (text ?? "").toString();
       return div.innerHTML;
     }
 
+    // IMPORTANT: do not trim - trimming during live typing breaks caret logic and can feel like "focus loss".
     function safeText(text){
-      if(!text) return "";
-      return text.trim();
+      return (text ?? "").toString();
     }
 
-    function captureFocus(){
-      const active = document.activeElement;
-      if(!active || !active.hasAttribute("data-row")) return;
-
-      const row = Number(active.getAttribute("data-row"));
-      const field = active.getAttribute("data-field");
-      const start = active.selectionStart;
-      const end = active.selectionEnd;
-
-      focusCapture = { row, field, start, end };
+    function clamp(n, min, max){
+      return Math.max(min, Math.min(max, n));
     }
 
-    function restoreFocus(){
-      if(!focusCapture) return;
+    function isEditable(elm){
+      return !!(elm && elm.getAttribute && elm.getAttribute("data-row") !== null && elm.getAttribute("data-field") !== null);
+    }
 
-      const { row, field, start, end } = focusCapture;
-      const elem = el.tbodyEdit.querySelector(`[data-row="${row}"][data-field="${field}"]`);
-      if(!elem) return;
+    function takeSnapshot(fromElem){
+      if(!isEditable(fromElem)) return lastSnapshot;
 
-      elem.focus();
-      if(typeof elem.setSelectionRange === "function"){
-        elem.setSelectionRange(start, end);
+      const row = Number(fromElem.getAttribute("data-row"));
+      const field = fromElem.getAttribute("data-field");
+      const scroller = el.editTableWrap;
+      const snap = {
+        row,
+        field,
+        scrollTop: scroller ? scroller.scrollTop : 0,
+        scrollLeft: scroller ? scroller.scrollLeft : 0
+      };
+
+      if(typeof fromElem.selectionStart === "number" && typeof fromElem.selectionEnd === "number"){
+        snap.start = fromElem.selectionStart;
+        snap.end = fromElem.selectionEnd;
       }
-      focusCapture = null;
+
+      return snap;
+    }
+
+    function applySnapshot(snap){
+      if(!snap || !el.tbodyEdit) return false;
+
+      const maxRow = Math.max(0, state.rows.length - 1);
+      const row = clamp(Number(snap.row), 0, maxRow);
+      const field = snap.field;
+
+      let target =
+        el.tbodyEdit.querySelector(`[data-row="${row}"][data-field="${field}"]`) ||
+        el.tbodyEdit.querySelector(`[data-row="${row}"] textarea`) ||
+        el.tbodyEdit.querySelector(`[data-row="${row}"] select`) ||
+        el.tbodyEdit.querySelector(`textarea[data-row], select[data-row]`);
+
+      if(!target) return false;
+
+      if(el.editTableWrap){
+        el.editTableWrap.scrollTop = snap.scrollTop || 0;
+        el.editTableWrap.scrollLeft = snap.scrollLeft || 0;
+      }
+
+      // Focus + caret restore (Chrome sometimes needs focus first, then caret in a later tick)
+      try{
+        target.focus({ preventScroll: true });
+      }catch(_){
+        try{ target.focus(); }catch(__){}
+      }
+
+      if(typeof snap.start === "number" && typeof target.setSelectionRange === "function"){
+        const len = (target.value ?? "").toString().length;
+        const s = clamp(snap.start, 0, len);
+        const e = clamp((typeof snap.end === "number" ? snap.end : s), 0, len);
+        try{ target.setSelectionRange(s, e); }catch(_){}
+      }
+
+      return document.activeElement === target;
+    }
+
+    function restoreSnapshotRobust(snap){
+      if(!snap) return;
+
+      // 1) immediate (in the same user-input task -> Chrome-friendly)
+      if(applySnapshot(snap)) return;
+
+      // 2) microtask
+      Promise.resolve().then(() => applySnapshot(snap));
+
+      // 3) next frame (some Chrome builds only accept caret restore after paint)
+      requestAnimationFrame(() => applySnapshot(snap));
+
+      // 4) last resort
+      setTimeout(() => applySnapshot(snap), 0);
     }
 
     function autoSizeTextareas(container){
       container.querySelectorAll("textarea").forEach(ta => {
         ta.style.height = "0px";
         ta.style.height = Math.max(44, ta.scrollHeight) + "px";
-      });
-    }
-
-    function scheduleRender(){
-      if(renderScheduled) return;
-      renderScheduled = true;
-      requestAnimationFrame(() => {
-        renderScheduled = false;
-        renderEdit();
-        autoSizeTextareas(el.tbodyEdit);
-        restoreFocus();
       });
     }
 
@@ -593,6 +646,7 @@
 
       el.tbodyEdit.innerHTML = rowsHTML;
 
+      // Re-inject values (keeps UI consistent even if we render from state)
       state.rows.forEach((r, i) => {
         const exp = el.tbodyEdit.querySelector(`[data-row="${i}"][data-field="experience"]`);
         const comp = el.tbodyEdit.querySelector(`[data-row="${i}"][data-field="competence"]`);
@@ -603,6 +657,13 @@
         if(prv) prv.value = r.preuve || "";
         if(mai) mai.value = r.maitrise || "Débutant";
       });
+    }
+
+    function rerenderKeepingFocus(snapshot){
+      renderEdit();
+      autoSizeTextareas(el.tbodyEdit);
+      restoreSnapshotRobust(snapshot);
+      lastSnapshot = snapshot || lastSnapshot;
     }
 
     function rowsForPreview(){
@@ -634,7 +695,8 @@
       }else{
         el.previewView.classList.add("hidden");
         el.editView.classList.remove("hidden");
-        scheduleRender();
+        // re-render once when coming back
+        rerenderKeepingFocus(lastSnapshot);
       }
     }
 
@@ -642,7 +704,6 @@
       const idx = Math.max(-1, Math.min(afterIndex, state.rows.length - 1));
       state.rows.splice(idx + 1, 0, blankRow());
       save();
-      scheduleRender();
     }
 
     function removeRow(index){
@@ -650,18 +711,17 @@
       const idx = Math.max(0, Math.min(index, state.rows.length - 1));
       state.rows.splice(idx, 1);
       save();
-      scheduleRender();
     }
 
-    function updateCell(rowIndex, field, value){
+    function updateCellState(rowIndex, field, value){
       if(!state.rows[rowIndex]) return;
+
       if(field === "maitrise"){
         state.rows[rowIndex].maitrise = MASTERIES.includes(value) ? value : "Débutant";
       }else{
         state.rows[rowIndex][field] = safeText(value);
       }
       save();
-      scheduleRender();
     }
 
     function filenameBase(){
@@ -755,7 +815,7 @@
 
     function exportExcel(){
       // NOTE: this is not a "true" XLSX file structure - it's an HTML table saved with .xlsx extension
-      // (works for many uses because Excel can open it, but it may show a warning depending on settings).
+      // (Excel may show a warning depending on settings).
       const rows = rowsForPreview();
       const table = buildExportTableHTML(rows);
 
@@ -792,24 +852,70 @@
     }
 
     function bindEvents(){
+      // Track focus changes reliably (works for clicks, tabs, etc.)
+      el.tbodyEdit.addEventListener("focusin", (e) => {
+        if(isEditable(e.target)){
+          lastSnapshot = takeSnapshot(e.target);
+        }
+      });
+
+      // Composition handling (important for Chrome - prevents losing focus/caret during IME/dead keys)
+      el.tbodyEdit.addEventListener("compositionstart", (e) => {
+        if(isEditable(e.target)){
+          isComposing = true;
+          lastSnapshot = takeSnapshot(e.target);
+        }
+      });
+
+      el.tbodyEdit.addEventListener("compositionend", (e) => {
+        if(!isEditable(e.target)) return;
+        isComposing = false;
+
+        const t = e.target;
+        const row = Number(t.getAttribute("data-row"));
+        const field = t.getAttribute("data-field");
+
+        const snap = takeSnapshot(t);
+        lastSnapshot = snap;
+
+        updateCellState(row, field, t.value);
+      });
+
       el.tbodyEdit.addEventListener("input", (e) => {
         const t = e.target;
-        const row = t.getAttribute("data-row");
-        const field = t.getAttribute("data-field");
-        if(row === null || field === null) return;
+        if(!isEditable(t)) return;
 
-        captureFocus();
-        updateCell(Number(row), field, t.value);
+        const row = Number(t.getAttribute("data-row"));
+        const field = t.getAttribute("data-field");
+
+        const snap = takeSnapshot(t);
+        lastSnapshot = snap;
+
+        updateCellState(row, field, t.value);
+
+        // During composition, do not re-render (Chrome will often drop caret/focus).
+        if(isComposing) {
+          // still keep textarea height pleasant while typing
+          if(t.tagName === "TEXTAREA"){
+            t.style.height = "0px";
+            t.style.height = Math.max(44, t.scrollHeight) + "px";
+          }
+          return;
+        }
+
       });
 
       el.tbodyEdit.addEventListener("change", (e) => {
         const t = e.target;
-        const row = t.getAttribute("data-row");
-        const field = t.getAttribute("data-field");
-        if(row === null || field === null) return;
+        if(!isEditable(t)) return;
 
-        captureFocus();
-        updateCell(Number(row), field, t.value);
+        const row = Number(t.getAttribute("data-row"));
+        const field = t.getAttribute("data-field");
+
+        const snap = takeSnapshot(t);
+        lastSnapshot = snap;
+
+        updateCellState(row, field, t.value);
       });
 
       el.tbodyEdit.addEventListener("click", (e) => {
@@ -819,13 +925,18 @@
         const action = btn.getAttribute("data-action");
         const index = Number(btn.getAttribute("data-index"));
 
+        const snap = lastSnapshot;
+
         if(action === "add"){
-          captureFocus();
           addRow(index);
+          rerenderKeepingFocus(snap);
+          return;
         }
+
         if(action === "remove"){
-          captureFocus();
           removeRow(index);
+          // if the removed row was the focused row, clamp will move focus to nearest remaining row
+          rerenderKeepingFocus(snap);
         }
       });
 
@@ -842,16 +953,9 @@
         localStorage.removeItem(STORAGE_KEY);
         location.reload();
       });
-
-      el.tbodyEdit.addEventListener("input", (e) => {
-        if(e.target && e.target.tagName === "TEXTAREA"){
-          const a = e.target;
-          a.style.height = "0px";
-          a.style.height = Math.max(44, a.scrollHeight) + "px";
-        }
-      });
     }
 
+    // init
     load();
     renderEdit();
     autoSizeTextareas(el.tbodyEdit);
