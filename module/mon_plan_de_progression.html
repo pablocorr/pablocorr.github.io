@@ -1,0 +1,750 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Mon plan de progression</title>
+
+  <style>
+    :root{
+      --bg:#ffffff;
+      --panel:#f6f7f9;
+      --text:#111827;
+      --muted:#6b7280;
+      --border:#e5e7eb;
+      --accent:#2563eb;
+      --danger:#dc2626;
+      --ok:#16a34a;
+      --shadow: 0 10px 25px rgba(0,0,0,.06);
+      --radius: 14px;
+      --font: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+    }
+
+    html, body { height: 100%; }
+    body{
+      margin:0;
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .wrap{
+      max-width: 1100px;
+      margin: 18px auto;
+      padding: 0 14px 22px;
+    }
+
+    .card{
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 16px;
+    }
+
+    h1{
+      margin: 0 0 6px;
+      font-size: 20px;
+      line-height: 1.2;
+      text-align: center;
+    }
+    .sub{
+      margin: 0 0 12px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .topbar{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      margin: 12px 0 10px;
+    }
+
+    .pill{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      flex-wrap: wrap;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .pill strong{ color: var(--text); }
+
+    .actions{
+      display:flex;
+      gap:8px;
+      align-items:center;
+      flex-wrap: wrap;
+    }
+
+    button{
+      border: 1px solid var(--border);
+      background: #fff;
+      color: var(--text);
+      border-radius: 10px;
+      padding: 8px 10px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 13px;
+      line-height: 1;
+      transition: transform .02s ease, border-color .2s ease, box-shadow .2s ease;
+    }
+    button:active{ transform: translateY(1px); }
+    button.primary{
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+    button.danger{
+      background: #fff;
+      border-color: rgba(220,38,38,.35);
+      color: var(--danger);
+    }
+    button:disabled{
+      opacity: .5;
+      cursor: not-allowed;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+
+    .tableWrap{
+      overflow:auto;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background:#fff;
+    }
+
+    table{
+      width:100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      min-width: 920px;
+    }
+
+    thead th{
+      position: sticky;
+      top: 0;
+      background: #fff;
+      z-index: 1;
+      font-size: 13px;
+      text-align: left;
+      padding: 10px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    tbody td{
+      vertical-align: top;
+      padding: 10px;
+      border-bottom: 1px solid var(--border);
+    }
+    tbody tr:last-child td{ border-bottom: 0; }
+
+    .cell{
+      display:flex;
+      flex-direction: column;
+      gap:8px;
+    }
+
+    input[type="text"], textarea, select{
+      width:100%;
+      box-sizing: border-box;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 9px 10px;
+      font-size: 13px;
+      background: #fff;
+      color: var(--text);
+      outline: none;
+    }
+    textarea{
+      min-height: 70px;
+      resize: vertical;
+    }
+    input[type="text"]:focus, textarea:focus, select:focus{
+      border-color: rgba(37,99,235,.55);
+      box-shadow: 0 0 0 3px rgba(37,99,235,.12);
+    }
+
+    .rowTools{
+      display:flex;
+      align-items:center;
+      justify-content: flex-end;
+      gap:8px;
+    }
+    .mini{
+      width: 34px;
+      height: 34px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      padding:0;
+      border-radius: 10px;
+    }
+
+    .hint{
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 6px;
+    }
+
+    .msg{
+      border: 1px solid var(--border);
+      background:#fff;
+      border-radius: 12px;
+      padding: 10px 12px;
+      font-size: 13px;
+      display:flex;
+      align-items:flex-start;
+      gap:10px;
+    }
+    .msg.ok{ border-color: rgba(22,163,74,.35); }
+    .msg.bad{ border-color: rgba(220,38,38,.35); }
+    .msg .dot{
+      width:10px; height:10px; border-radius: 999px; margin-top: 4px;
+      background: var(--muted);
+      flex:0 0 auto;
+    }
+    .msg.ok .dot{ background: var(--ok); }
+    .msg.bad .dot{ background: var(--danger); }
+
+    .recap{
+      border: 1px solid var(--border);
+      background:#fff;
+      border-radius: 12px;
+      padding: 12px;
+    }
+    .recap h2{
+      margin:0 0 8px;
+      font-size: 14px;
+    }
+    .recap ul{
+      margin:0;
+      padding-left: 18px;
+      color: var(--text);
+      font-size: 13px;
+    }
+    .recap li{ margin: 6px 0; }
+    .muted{ color: var(--muted); }
+
+    .footerRow{
+      display:flex;
+      justify-content: space-between;
+      align-items:center;
+      gap:10px;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+
+    .smallNote{
+      font-size: 12px;
+      color: var(--muted);
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1>Mon plan de progression</h1>
+      <p class="sub">
+        Identifiez au moins <strong>3</strong> compétences requises pour le poste visé, évaluez votre niveau, puis définissez des pistes d’action.
+      </p>
+
+      <div class="topbar">
+        <div class="pill" id="progressPill">
+          <strong>0</strong>/3 compétences complètes
+          <span class="muted">- les exports se débloquent quand tout est complet</span>
+        </div>
+
+        <div class="actions">
+          <button class="mini primary" id="addRowBtn" title="Ajouter une ligne">+</button>
+          <button id="openTabBtn" title="Ouvrir dans un nouvel onglet (utile si votre LMS bloque les téléchargements)">Ouvrir en plein écran</button>
+        </div>
+      </div>
+
+      <div class="grid">
+        <div class="tableWrap">
+          <table aria-label="Tableau du plan de progression">
+            <thead>
+              <tr>
+                <th style="width: 34%;">Les compétences requises dans le poste visé</th>
+                <th style="width: 28%;">Auto-évaluation</th>
+                <th style="width: 34%;">Mes pistes d’action (si 2 ou 3)</th>
+                <th style="width: 4%;">-</th>
+              </tr>
+            </thead>
+            <tbody id="tbody"></tbody>
+          </table>
+        </div>
+
+        <div id="statusBox" class="msg bad" role="status" aria-live="polite">
+          <span class="dot"></span>
+          <div id="statusText">Renseignez au moins 3 lignes. Pour 2 ou 3, le champ "Mes pistes d’action" devient obligatoire.</div>
+        </div>
+
+        <div class="recap">
+          <h2>Récapitulatif</h2>
+          <div class="muted smallNote" id="recapEmpty">Le récapitulatif s’affichera ici au fur et à mesure.</div>
+          <ul id="recapList" style="display:none;"></ul>
+
+          <div class="footerRow">
+            <div class="actions">
+              <button id="exportXlsxBtn" class="primary" disabled>Télécharger Excel (.xlsx)</button>
+              <button id="exportDocxBtn" disabled>Télécharger Word (.docx)</button>
+              <button id="exportPdfBtn" disabled>Télécharger PDF (.pdf)</button>
+            </div>
+            <div class="smallNote">
+              Astuce - si un téléchargement est bloqué dans Rise/LMS, cliquez sur <strong>Ouvrir en plein écran</strong>.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="hint" id="saveHint">
+        Vos données sont sauvegardées automatiquement dans ce navigateur (localStorage).
+      </div>
+    </div>
+  </div>
+
+  <!-- Export libs (CDN). If blocked, related exports are disabled. -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.19.3/dist/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.5.31/dist/jspdf.plugin.autotable.min.js"></script>
+
+<script>
+(function(){
+  const KEY = "plan_progression_v1";
+
+  const STATUS = [
+    { value: "", label: "Choisir..." },
+    { value: "have", label: "1 - J'ai cette compétence" },
+    { value: "reinforce", label: "2 - Je dois renforcer cette compétence" },
+    { value: "acquire", label: "3 - Je dois acquérir cette compétence" }
+  ];
+
+  const tbody = document.getElementById("tbody");
+  const addRowBtn = document.getElementById("addRowBtn");
+  const openTabBtn = document.getElementById("openTabBtn");
+
+  const statusBox = document.getElementById("statusBox");
+  const statusText = document.getElementById("statusText");
+
+  const recapList = document.getElementById("recapList");
+  const recapEmpty = document.getElementById("recapEmpty");
+
+  const progressPill = document.getElementById("progressPill");
+
+  const exportXlsxBtn = document.getElementById("exportXlsxBtn");
+  const exportDocxBtn = document.getElementById("exportDocxBtn");
+  const exportPdfBtn  = document.getElementById("exportPdfBtn");
+
+  function el(tag, attrs = {}, children = []) {
+    const node = document.createElement(tag);
+    Object.entries(attrs).forEach(([k,v]) => {
+      if (k === "class") node.className = v;
+      else if (k === "text") node.textContent = v;
+      else if (k.startsWith("on") && typeof v === "function") node.addEventListener(k.slice(2), v);
+      else node.setAttribute(k, v);
+    });
+    children.forEach(c => node.appendChild(c));
+    return node;
+  }
+
+  function buildSelect(value) {
+    const s = el("select", {});
+    STATUS.forEach(opt => {
+      const o = el("option", { value: opt.value, text: opt.label });
+      s.appendChild(o);
+    });
+    s.value = value || "";
+    return s;
+  }
+
+  function shouldRequireAction(statusValue) {
+    return statusValue === "reinforce" || statusValue === "acquire";
+  }
+
+  function addRow(data = { skill:"", status:"", action:"" }) {
+    const tr = el("tr", {});
+
+    const skillInput = el("input", { type:"text", value: data.skill || "" });
+    const c1 = el("td", {}, [ el("div", { class:"cell" }, [skillInput]) ]);
+
+    const statusSelect = buildSelect(data.status || "");
+    const c2 = el("td", {}, [ el("div", { class:"cell" }, [statusSelect]) ]);
+
+    const actionWrap = el("div", { class:"cell" });
+    const actionArea = el("textarea", {});
+    actionArea.value = data.action || "";
+    actionWrap.appendChild(actionArea);
+    const c3 = el("td", {}, [actionWrap]);
+
+    const removeBtn = el("button", { class:"mini danger", title:"Supprimer cette ligne", text:"-" });
+    const c4 = el("td", {}, [ el("div", { class:"rowTools" }, [removeBtn]) ]);
+
+    tr.appendChild(c1);
+    tr.appendChild(c2);
+    tr.appendChild(c3);
+    tr.appendChild(c4);
+    tbody.appendChild(tr);
+
+    function applyActionVisibility() {
+      const need = shouldRequireAction(statusSelect.value);
+      actionArea.style.display = need ? "" : "none";
+      actionArea.toggleAttribute("required", need);
+      if (!need) actionArea.value = "";
+    }
+
+    // No re-render (keeps focus stable)
+    skillInput.addEventListener("input", onAnyChange);
+    actionArea.addEventListener("input", onAnyChange);
+
+    statusSelect.addEventListener("change", () => {
+      applyActionVisibility();
+      onAnyChange();
+    });
+
+    removeBtn.addEventListener("click", () => {
+      if (tbody.querySelectorAll("tr").length <= 3) return;
+      tr.remove();
+      onAnyChange();
+    });
+
+    applyActionVisibility();
+    onAnyChange();
+  }
+
+  function readRows() {
+    const rows = [];
+    const trs = tbody.querySelectorAll("tr");
+    trs.forEach(tr => {
+      const skill = tr.querySelector('td:nth-child(1) input')?.value?.trim() || "";
+      const status = tr.querySelector('td:nth-child(2) select')?.value || "";
+      const actionEl = tr.querySelector('td:nth-child(3) textarea');
+      const action = (actionEl && actionEl.style.display !== "none")
+        ? (actionEl.value || "").trim()
+        : "";
+      rows.push({ skill, status, action });
+    });
+    return rows;
+  }
+
+  function statusLabel(v) {
+    const found = STATUS.find(s => s.value === v);
+    return found ? found.label : "";
+  }
+
+  function validate(rows) {
+    const errors = [];
+    let completeCount = 0;
+
+    rows.forEach((r, idx) => {
+      const n = idx + 1;
+      if (!r.skill && !r.status && !r.action) return;
+
+      if (!r.skill) errors.push(`Ligne ${n} - compétence manquante.`);
+      if (!r.status) errors.push(`Ligne ${n} - auto-évaluation manquante.`);
+      if (shouldRequireAction(r.status) && !r.action) {
+        errors.push(`Ligne ${n} - piste d’action obligatoire (si 2 ou 3).`);
+      }
+
+      const isComplete =
+        !!r.skill &&
+        !!r.status &&
+        (!shouldRequireAction(r.status) || !!r.action);
+
+      if (isComplete) completeCount++;
+    });
+
+    const ok = completeCount >= 3 && errors.length === 0;
+    return { ok, errors, completeCount };
+  }
+
+  let saveTimer = null;
+  function save(rows) {
+    try {
+      localStorage.setItem(KEY, JSON.stringify({ rows, savedAt: Date.now() }));
+    } catch (e) {}
+  }
+  function load() {
+    try {
+      const raw = localStorage.getItem(KEY);
+      if (!raw) return null;
+      const parsed = JSON.parse(raw);
+      if (!parsed || !Array.isArray(parsed.rows)) return null;
+      return parsed.rows;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function renderRecap(rows) {
+    const cleaned = rows
+      .filter(r => r.skill || r.status || r.action)
+      .filter(r => r.skill && r.status && (!shouldRequireAction(r.status) || r.action));
+
+    if (cleaned.length === 0) {
+      recapList.style.display = "none";
+      recapEmpty.style.display = "";
+      recapEmpty.textContent = "Le récapitulatif s’affichera ici au fur et à mesure.";
+      recapList.innerHTML = "";
+      return;
+    }
+
+    recapEmpty.style.display = "none";
+    recapList.style.display = "";
+    recapList.innerHTML = "";
+
+    cleaned.forEach(r => {
+      const li = document.createElement("li");
+      const sLabel = statusLabel(r.status);
+      if (shouldRequireAction(r.status)) {
+        li.textContent = `${r.skill} - ${sLabel} - Piste d’action: ${r.action}`;
+      } else {
+        li.textContent = `${r.skill} - ${sLabel}`;
+      }
+      recapList.appendChild(li);
+    });
+  }
+
+  function downloadBlob(filename, blob) {
+    const a = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => {
+      URL.revokeObjectURL(url);
+      a.remove();
+    }, 0);
+  }
+
+  function getExportRows() {
+    const rows = readRows();
+    const v = validate(rows);
+    if (!v.ok) return null;
+
+    const cleaned = rows
+      .filter(r => r.skill || r.status || r.action)
+      .filter(r => r.skill && r.status && (!shouldRequireAction(r.status) || r.action));
+
+    return cleaned.map(r => ({
+      skill: r.skill,
+      status: statusLabel(r.status),
+      action: shouldRequireAction(r.status) ? r.action : ""
+    }));
+  }
+
+  function exportXlsx() {
+    const data = getExportRows();
+    if (!data) return;
+
+    if (!window.XLSX) {
+      alert("Export Excel indisponible ici (librairie XLSX bloquée). Astuce - cliquez sur 'Ouvrir en plein écran'.");
+      return;
+    }
+
+    const aoa = [
+      ["Compétences requises", "Auto-évaluation", "Pistes d'action"],
+      ...data.map(r => [r.skill, r.status, r.action])
+    ];
+
+    const ws = XLSX.utils.aoa_to_sheet(aoa);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Plan");
+
+    const out = XLSX.write(wb, { bookType:"xlsx", type:"array" });
+    downloadBlob("Mon_plan_de_progression.xlsx", new Blob([out], {
+      type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    }));
+  }
+
+  async function exportDocx() {
+    const data = getExportRows();
+    if (!data) return;
+
+    if (!window.docx || !window.docx.Document) {
+      const html =
+`<html><head><meta charset="utf-8"></head><body>
+<h2>Mon plan de progression</h2>
+<table border="1" cellpadding="6" cellspacing="0">
+<tr><th>Compétences requises</th><th>Auto-évaluation</th><th>Pistes d'action</th></tr>
+${data.map(r => `<tr><td>${escapeHtml(r.skill)}</td><td>${escapeHtml(r.status)}</td><td>${escapeHtml(r.action)}</td></tr>`).join("")}
+</table>
+</body></html>`;
+      downloadBlob("Mon_plan_de_progression.doc", new Blob([html], { type:"application/msword;charset=utf-8" }));
+      return;
+    }
+
+    const { Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell, WidthType } = window.docx;
+
+    const headerRow = new TableRow({
+      children: [
+        new TableCell({ width: { size: 40, type: WidthType.PERCENTAGE }, children: [new Paragraph({ children:[new TextRun({ text:"Compétences requises", bold:true })] })] }),
+        new TableCell({ width: { size: 30, type: WidthType.PERCENTAGE }, children: [new Paragraph({ children:[new TextRun({ text:"Auto-évaluation", bold:true })] })] }),
+        new TableCell({ width: { size: 30, type: WidthType.PERCENTAGE }, children: [new Paragraph({ children:[new TextRun({ text:"Pistes d'action", bold:true })] })] })
+      ]
+    });
+
+    const rows = data.map(r => new TableRow({
+      children: [
+        new TableCell({ children: [new Paragraph(r.skill)] }),
+        new TableCell({ children: [new Paragraph(r.status)] }),
+        new TableCell({ children: [new Paragraph(r.action || "")] })
+      ]
+    }));
+
+    const table = new Table({
+      width: { size: 100, type: WidthType.PERCENTAGE },
+      rows: [headerRow, ...rows]
+    });
+
+    const doc = new Document({
+      sections: [{
+        children: [
+          new Paragraph({ children:[ new TextRun({ text:"Mon plan de progression", bold:true, size: 28 }) ] }),
+          new Paragraph({ children:[ new TextRun({ text:`Date: ${new Date().toLocaleDateString("fr-FR")}`, size: 20 }) ] }),
+          new Paragraph(""),
+          table
+        ]
+      }]
+    });
+
+    const blob = await Packer.toBlob(doc);
+    downloadBlob("Mon_plan_de_progression.docx", blob);
+  }
+
+  function exportPdf() {
+    const data = getExportRows();
+    if (!data) return;
+
+    const jspdfNS = window.jspdf;
+    if (!jspdfNS || !jspdfNS.jsPDF) {
+      alert("Export PDF indisponible ici (librairie bloquée). Astuce - cliquez sur 'Ouvrir en plein écran'.");
+      return;
+    }
+
+    const doc = new jspdfNS.jsPDF({ orientation: "p", unit: "pt", format: "a4" });
+    const marginX = 40;
+
+    doc.setFontSize(14);
+    doc.text("Mon plan de progression", marginX, 48);
+
+    doc.setFontSize(10);
+    doc.text(`Date: ${new Date().toLocaleDateString("fr-FR")}`, marginX, 66);
+
+    const body = data.map(r => [r.skill, r.status, r.action || ""]);
+    doc.autoTable({
+      startY: 86,
+      head: [["Compétences requises", "Auto-évaluation", "Pistes d'action"]],
+      body,
+      styles: { fontSize: 9, cellPadding: 6 },
+      headStyles: { fontStyle: "bold" },
+      margin: { left: marginX, right: marginX }
+    });
+
+    const blob = doc.output("blob");
+    downloadBlob("Mon_plan_de_progression.pdf", blob);
+  }
+
+  function escapeHtml(s){
+    return String(s)
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;")
+      .replaceAll("'","&#039;");
+  }
+
+  function computeLibAvailability() {
+    const xlsxOk = !!window.XLSX;
+    exportXlsxBtn.dataset.libok = xlsxOk ? "1" : "0";
+  }
+
+  function onAnyChange() {
+    const rows = readRows();
+    const v = validate(rows);
+
+    progressPill.innerHTML = `<strong>${v.completeCount}</strong>/3 compétences complètes <span class="muted">- les exports se débloquent quand tout est complet</span>`;
+
+    const xlsxOk = (exportXlsxBtn.dataset.libok === "1");
+
+    if (v.ok) {
+      statusBox.classList.remove("bad");
+      statusBox.classList.add("ok");
+
+      if (!xlsxOk) {
+        statusText.textContent = "Vos données sont complètes. Word/PDF disponibles. Excel (.xlsx) est indisponible ici (librairie bloquée) - cliquez sur 'Ouvrir en plein écran'.";
+      } else {
+        statusText.textContent = "Parfait - vous avez au moins 3 compétences complètes. Vous pouvez exporter en Excel, Word ou PDF.";
+      }
+    } else {
+      statusBox.classList.remove("ok");
+      statusBox.classList.add("bad");
+      if (v.completeCount < 3) {
+        statusText.textContent = `Objectif - complétez au moins 3 compétences (actuellement ${v.completeCount}/3).`;
+      } else if (v.errors.length) {
+        statusText.textContent = v.errors[0] + (v.errors.length > 1 ? ` (+${v.errors.length - 1})` : "");
+      } else {
+        statusText.textContent = "Complétez au moins 3 lignes et vérifiez les champs obligatoires.";
+      }
+    }
+
+    renderRecap(rows);
+
+    exportXlsxBtn.disabled = !v.ok || !xlsxOk;
+    exportDocxBtn.disabled = !v.ok;
+    exportPdfBtn.disabled  = !v.ok;
+
+    if (saveTimer) clearTimeout(saveTimer);
+    saveTimer = setTimeout(() => save(rows), 250);
+  }
+
+  // Init
+  addRowBtn.addEventListener("click", () => addRow());
+
+  openTabBtn.addEventListener("click", () => {
+    window.open(window.location.href, "_blank", "noopener,noreferrer");
+  });
+
+  exportXlsxBtn.addEventListener("click", exportXlsx);
+  exportDocxBtn.addEventListener("click", exportDocx);
+  exportPdfBtn.addEventListener("click", exportPdf);
+
+  const loaded = load();
+  tbody.innerHTML = "";
+
+  if (loaded && loaded.length) {
+    loaded.forEach(r => addRow(r));
+    while (tbody.querySelectorAll("tr").length < 3) addRow();
+  } else {
+    addRow(); addRow(); addRow();
+  }
+
+  const observer = new MutationObserver(() => {
+    const count = tbody.querySelectorAll("tr").length;
+    tbody.querySelectorAll("tr").forEach(tr => {
+      const btn = tr.querySelector("button.danger");
+      if (btn) btn.disabled = (count <= 3);
+    });
+  });
+  observer.observe(tbody, { childList: true, subtree: true });
+
+  // Determine if the XLSX lib loaded (keeps .xlsx only)
+  computeLibAvailability();
+  onAnyChange();
+})();
+</script>
+</body>
+</html>
