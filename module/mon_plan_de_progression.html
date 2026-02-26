@@ -298,8 +298,7 @@
 
           <div class="footerRow">
             <div class="actions">
-              <button id="exportXlsxBtn" class="primary" disabled>Télécharger Excel (.xlsx)</button>
-              <button id="exportDocxBtn" disabled>Télécharger Word (.docx)</button>
+<button id="exportDocxBtn" disabled>Télécharger Word (.docx)</button>
               <button id="exportPdfBtn" disabled>Télécharger PDF (.pdf)</button>
             </div>
             <div class="smallNote">
@@ -316,8 +315,7 @@
   </div>
 
   <!-- Export libs (CDN). If blocked, related exports are disabled. -->
-  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.19.3/dist/xlsx.full.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.5.31/dist/jspdf.plugin.autotable.min.js"></script>
 
@@ -343,9 +341,7 @@
   const recapEmpty = document.getElementById("recapEmpty");
 
   const progressPill = document.getElementById("progressPill");
-
-  const exportXlsxBtn = document.getElementById("exportXlsxBtn");
-  const exportDocxBtn = document.getElementById("exportDocxBtn");
+const exportDocxBtn = document.getElementById("exportDocxBtn");
   const exportPdfBtn  = document.getElementById("exportPdfBtn");
 
   function el(tag, attrs = {}, children = []) {
@@ -546,29 +542,6 @@
     }));
   }
 
-  function exportXlsx() {
-    const data = getExportRows();
-    if (!data) return;
-
-    if (!window.XLSX) {
-      alert("Export Excel indisponible ici (librairie XLSX bloquée). Astuce - cliquez sur 'Ouvrir en plein écran'.");
-      return;
-    }
-
-    const aoa = [
-      ["Compétences requises", "Auto-évaluation", "Pistes d'action"],
-      ...data.map(r => [r.skill, r.status, r.action])
-    ];
-
-    const ws = XLSX.utils.aoa_to_sheet(aoa);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Plan");
-
-    const out = XLSX.write(wb, { bookType:"xlsx", type:"array" });
-    downloadBlob("Mon_plan_de_progression.xlsx", new Blob([out], {
-      type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-    }));
-  }
 
   async function exportDocx() {
     const data = getExportRows();
@@ -667,28 +640,15 @@ ${data.map(r => `<tr><td>${escapeHtml(r.skill)}</td><td>${escapeHtml(r.status)}<
       .replaceAll("'","&#039;");
   }
 
-  function computeLibAvailability() {
-    const xlsxOk = !!window.XLSX;
-    exportXlsxBtn.dataset.libok = xlsxOk ? "1" : "0";
-  }
-
   function onAnyChange() {
     const rows = readRows();
     const v = validate(rows);
 
     progressPill.innerHTML = `<strong>${v.completeCount}</strong>/3 compétences complètes <span class="muted">- les exports se débloquent quand tout est complet</span>`;
-
-    const xlsxOk = (exportXlsxBtn.dataset.libok === "1");
-
-    if (v.ok) {
+if (v.ok) {
       statusBox.classList.remove("bad");
       statusBox.classList.add("ok");
-
-      if (!xlsxOk) {
-        statusText.textContent = "Vos données sont complètes. Word/PDF disponibles. Excel (.xlsx) est indisponible ici (librairie bloquée) - cliquez sur 'Ouvrir en plein écran'.";
-      } else {
-        statusText.textContent = "Parfait - vous avez au moins 3 compétences complètes. Vous pouvez exporter en Excel, Word ou PDF.";
-      }
+      statusText.textContent = "Parfait - vous avez au moins 3 compétences complètes. Vous pouvez exporter en Word ou PDF.";
     } else {
       statusBox.classList.remove("ok");
       statusBox.classList.add("bad");
@@ -702,9 +662,7 @@ ${data.map(r => `<tr><td>${escapeHtml(r.skill)}</td><td>${escapeHtml(r.status)}<
     }
 
     renderRecap(rows);
-
-    exportXlsxBtn.disabled = !v.ok || !xlsxOk;
-    exportDocxBtn.disabled = !v.ok;
+exportDocxBtn.disabled = !v.ok;
     exportPdfBtn.disabled  = !v.ok;
 
     if (saveTimer) clearTimeout(saveTimer);
@@ -717,9 +675,7 @@ ${data.map(r => `<tr><td>${escapeHtml(r.skill)}</td><td>${escapeHtml(r.status)}<
   openTabBtn.addEventListener("click", () => {
     window.open(window.location.href, "_blank", "noopener,noreferrer");
   });
-
-  exportXlsxBtn.addEventListener("click", exportXlsx);
-  exportDocxBtn.addEventListener("click", exportDocx);
+exportDocxBtn.addEventListener("click", exportDocx);
   exportPdfBtn.addEventListener("click", exportPdf);
 
   const loaded = load();
@@ -740,10 +696,7 @@ ${data.map(r => `<tr><td>${escapeHtml(r.skill)}</td><td>${escapeHtml(r.status)}<
     });
   });
   observer.observe(tbody, { childList: true, subtree: true });
-
-  // Determine if the XLSX lib loaded (keeps .xlsx only)
-  computeLibAvailability();
-  onAnyChange();
+onAnyChange();
 })();
 </script>
 </body>
