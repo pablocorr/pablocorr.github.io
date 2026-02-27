@@ -327,13 +327,13 @@
     </style>
 </head>
 <body class="light">
-    <button class="theme-toggle" onclick="toggleTheme()">🌙 Thème</button>
+    <button class="theme-toggle" onclick="toggleTheme()">đ ThĂšme</button>
 
     <div class="container">
-        <h1>📊 Convertisseur Excel vers CSV</h1>
+        <h1>đ Convertisseur Excel vers CSV</h1>
 
         <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
-            <p>📁 Glissez-déposez votre fichier Excel ici<br>ou cliquez pour sélectionner</p>
+            <p>đ Glissez-dĂ©posez votre fichier Excel ici<br>ou cliquez pour sĂ©lectionner</p>
         </div>
         <input type="file" id="fileInput" accept=".xlsx,.xls">
 
@@ -347,20 +347,20 @@
         <div class="error-counter" id="errorCounter" style="display: none;"></div>
 
         <div class="controls">
-            <button class="btn btn-primary" id="btnPreviewExcel" onclick="showExcelPreview()" disabled>👁️ Aperçu Excel</button>
-            <button class="btn btn-secondary" id="btnPreviewCSV" onclick="showCSVPreview()" disabled>👁️ Aperçu CSV</button>
-            <button class="btn btn-success" id="btnDownload" onclick="downloadCSV()" disabled>💾 Télécharger CSV</button>
-            <button class="btn btn-warning" id="btnMail" onclick="copyMailToClipboard()" disabled>✉️ Écrire mail</button>
-            <button class="btn btn-danger" id="btnReset" onclick="resetAll()">🔄 Réinitialiser</button>
+            <button class="btn btn-primary" id="btnPreviewExcel" onclick="showExcelPreview()" disabled>đïž AperĂ§u Excel</button>
+            <button class="btn btn-secondary" id="btnPreviewCSV" onclick="showCSVPreview()" disabled>đïž AperĂ§u CSV</button>
+            <button class="btn btn-success" id="btnDownload" onclick="downloadCSV()" disabled>đŸ TĂ©lĂ©charger CSV</button>
+            <button class="btn btn-warning" id="btnMail" onclick="copyMailToClipboard()" disabled>âïž Ăcrire mail</button>
+            <button class="btn btn-danger" id="btnReset" onclick="resetAll()">đ RĂ©initialiser</button>
         </div>
 
         <div class="preview-section" id="excelPreview">
-            <h2 class="preview-title">📄 Aperçu du fichier Excel</h2>
+            <h2 class="preview-title">đ AperĂ§u du fichier Excel</h2>
             <div class="table-container" id="excelTableContainer"></div>
         </div>
 
         <div class="preview-section" id="csvPreview">
-            <h2 class="preview-title">📋 Aperçu du fichier CSV</h2>
+            <h2 class="preview-title">đ AperĂ§u du fichier CSV</h2>
             <div class="table-container" id="csvTableContainer"></div>
         </div>
     </div>
@@ -370,7 +370,7 @@
         let csvData = null;
         let errorRows = [];
 
-        // Gestion du thème
+        // Gestion du thĂšme
         function toggleTheme() {
             document.body.classList.toggle('light');
             document.body.classList.toggle('dark');
@@ -406,7 +406,7 @@
 
         function handleFile(file) {
             if (!file.name.match(/\.(xlsx|xls)$/)) {
-                showNotification('❌ Veuillez sélectionner un fichier Excel (.xlsx ou .xls)', '#f44336');
+                showNotification('â Veuillez sĂ©lectionner un fichier Excel (.xlsx ou .xls)', '#f44336');
                 return;
             }
 
@@ -420,7 +420,7 @@
 
                     processExcelData(jsonData, file.name);
                 } catch (error) {
-                    showNotification('❌ Erreur lors de la lecture du fichier : ' + error.message, '#f44336');
+                    showNotification('â Erreur lors de la lecture du fichier : ' + error.message, '#f44336');
                 }
             };
             reader.readAsArrayBuffer(file);
@@ -428,37 +428,37 @@
 
         function processExcelData(data, fileName) {
             if (data.length === 0) {
-                showNotification('❌ Le fichier Excel est vide', '#f44336');
+                showNotification('â Le fichier Excel est vide', '#f44336');
                 return;
             }
 
-            // Vérifier les colonnes
-            const requiredColumns = ['Nom', 'Prénom', 'Adresse mail'];
+            // VĂ©rifier les colonnes
+            const requiredColumns = ['Nom', 'PrĂ©nom', 'Adresse mail'];
             const firstRow = data[0];
             const hasAllColumns = requiredColumns.every(col => col in firstRow);
 
             const strictMode = document.getElementById('strictMode').checked;
 
             if (strictMode && !hasAllColumns) {
-                showNotification('❌ Mode strict : Le fichier doit contenir les colonnes : Nom, Prénom, Adresse mail', '#f44336');
+                showNotification('â Mode strict : Le fichier doit contenir les colonnes : Nom, PrĂ©nom, Adresse mail', '#f44336');
                 return;
             }
 
             excelData = data;
             errorRows = [];
 
-            // Vérifier les erreurs
+            // VĂ©rifier les erreurs
             data.forEach((row, index) => {
-                const hasError = !row['Nom'] || !row['Prénom'] || !row['Adresse mail'];
+                const hasError = !row['Nom'] || !row['PrĂ©nom'] || !row['Adresse mail'];
                 if (hasError) {
                     errorRows.push(index);
                 }
             });
 
-            // Générer les données CSV
+            // GĂ©nĂ©rer les donnĂ©es CSV
             csvData = data.map(row => {
                 const nom = (row['Nom'] || '').toString().trim();
-                const prenom = (row['Prénom'] || '').toString().trim();
+                const prenom = (row['PrĂ©nom'] || '').toString().trim();
                 const email = (row['Adresse mail'] || '').toString().trim().toLowerCase();
 
                 return {
@@ -472,17 +472,17 @@
             });
 
             // Afficher les informations
-            document.getElementById('fileInfo').textContent = `✅ Fichier chargé : ${fileName} (${data.length} ligne(s))`;
+            document.getElementById('fileInfo').textContent = `â Fichier chargĂ© : ${fileName} (${data.length} ligne(s))`;
 
             // Afficher le compteur d'erreurs
             const errorCounter = document.getElementById('errorCounter');
             errorCounter.style.display = 'block';
             if (errorRows.length > 0) {
                 errorCounter.className = 'error-counter has-errors';
-                errorCounter.textContent = `⚠️ ${errorRows.length} ligne(s) avec données manquantes`;
+                errorCounter.textContent = `â ïž ${errorRows.length} ligne(s) avec donnĂ©es manquantes`;
             } else {
                 errorCounter.className = 'error-counter no-errors';
-                errorCounter.textContent = '✅ Aucune erreur détectée';
+                errorCounter.textContent = 'â Aucune erreur dĂ©tectĂ©e';
             }
 
             // Activer les boutons
@@ -491,14 +491,14 @@
             document.getElementById('btnDownload').disabled = false;
             document.getElementById('btnMail').disabled = false;
 
-            showNotification('✅ Fichier traité avec succès !', '#4caf50');
+            showNotification('â Fichier traitĂ© avec succĂšs !', '#4caf50');
         }
 
         function showExcelPreview() {
             if (!excelData) return;
 
             const container = document.getElementById('excelTableContainer');
-            let html = '<table><thead><tr><th>Ligne</th><th>Nom</th><th>Prénom</th><th>Adresse mail</th></tr></thead><tbody>';
+            let html = '<table><thead><tr><th>Ligne</th><th>Nom</th><th>PrĂ©nom</th><th>Adresse mail</th></tr></thead><tbody>';
 
             excelData.forEach((row, index) => {
                 const isError = errorRows.includes(index);
@@ -506,7 +506,7 @@
                 html += `<tr class="${rowClass}">
                     <td>${index + 1}</td>
                     <td>${row['Nom'] || '<em>Manquant</em>'}</td>
-                    <td>${row['Prénom'] || '<em>Manquant</em>'}</td>
+                    <td>${row['PrĂ©nom'] || '<em>Manquant</em>'}</td>
                     <td>${row['Adresse mail'] || '<em>Manquant</em>'}</td>
                 </tr>`;
             });
@@ -563,7 +563,7 @@
             link.click();
             document.body.removeChild(link);
 
-            showNotification('✅ Fichier CSV téléchargé !', '#4caf50');
+            showNotification('â Fichier CSV tĂ©lĂ©chargĂ© !', '#4caf50');
         }
 
         function copyMailToClipboard() {
@@ -571,7 +571,7 @@
 
             let tableHTML = '<table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse; font-family: Arial, sans-serif;">';
             tableHTML += '<thead><tr style="background-color: #667eea; color: white;">';
-            tableHTML += '<th>Nom</th><th>Prénom</th><th>Identifiant</th><th>Mot de passe</th>';
+            tableHTML += '<th>Nom</th><th>PrĂ©nom</th><th>Identifiant</th><th>Mot de passe</th>';
             tableHTML += '</tr></thead><tbody>';
 
             csvData.forEach(row => {
@@ -586,18 +586,18 @@
             tableHTML += '</tbody></table>';
 
             const mailContent = `<p>Bonjour,</p>
-<p>Votre demande a bien été traitée :</p>
+<p>Votre demande a bien Ă©tĂ© traitĂ©e :</p>
 ${tableHTML}
 <p>Cordialement,</p>`;
 
-            // Créer un élément temporaire pour copier le HTML
+            // CrĂ©er un Ă©lĂ©ment temporaire pour copier le HTML
             const tempDiv = document.createElement('div');
             tempDiv.innerHTML = mailContent;
             tempDiv.style.position = 'absolute';
             tempDiv.style.left = '-9999px';
             document.body.appendChild(tempDiv);
 
-            // Sélectionner et copier
+            // SĂ©lectionner et copier
             const range = document.createRange();
             range.selectNode(tempDiv);
             window.getSelection().removeAllRanges();
@@ -605,9 +605,9 @@ ${tableHTML}
 
             try {
                 document.execCommand('copy');
-                showNotification('✅ Contenu du mail copié dans le presse-papier !', '#4caf50');
+                showNotification('â Contenu du mail copiĂ© dans le presse-papier !', '#4caf50');
             } catch (err) {
-                showNotification('❌ Erreur lors de la copie : ' + err.message, '#f44336');
+                showNotification('â Erreur lors de la copie : ' + err.message, '#f44336');
             }
 
             window.getSelection().removeAllRanges();
@@ -633,7 +633,7 @@ ${tableHTML}
 
             document.getElementById('strictMode').checked = false;
 
-            showNotification('🔄 Application réinitialisée', '#2196f3');
+            showNotification('đ Application rĂ©initialisĂ©e', '#2196f3');
         }
 
         function showNotification(message, color) {
