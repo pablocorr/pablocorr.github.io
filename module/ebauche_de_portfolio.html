@@ -1,0 +1,378 @@
+<div class="pf-wrap">
+  <div class="pf-header">
+    <div class="pf-badge">Ébauche de portfolio</div>
+    <h2>Mon portfolio</h2>
+    <p>Remplissez les champs. Ensuite, téléchargez votre document.</p>
+  </div>
+
+  <!-- SECTION 1 -->
+  <section class="pf-card">
+    <div class="pf-card-title">
+      <span class="pf-dot"></span>
+      <h3>1) Introduction</h3>
+    </div>
+
+    <div class="pf-grid">
+      <label class="pf-field">
+        <span>Nom</span>
+        <input type="text" id="pf_nom" placeholder="Ex : Eva Garcia" />
+      </label>
+
+      <label class="pf-field">
+        <span>Titre du portfolio</span>
+        <input type="text" id="pf_titre" placeholder="Ex : Portfolio – Gestion de projet" />
+      </label>
+
+      <label class="pf-field pf-full">
+        <span>Biographie concise</span>
+        <textarea id="pf_bio" rows="4" placeholder="4–6 lignes : qui je suis, ce que je sais faire, ce que je cherche."></textarea>
+        <small>Astuce : allez droit au but. Clarté &gt; longueur.</small>
+      </label>
+
+      <label class="pf-field pf-full">
+        <span>Mes valeurs et mes objectifs</span>
+        <textarea id="pf_valeurs" rows="4" placeholder="Ex : autonomie, rigueur, utilité… + objectif pro (poste/secteur)."></textarea>
+      </label>
+    </div>
+  </section>
+
+  <!-- SECTION 2 -->
+  <section class="pf-card">
+    <div class="pf-card-title">
+      <span class="pf-dot"></span>
+      <h3>2) Mon 1er projet</h3>
+    </div>
+
+    <div class="pf-grid">
+      <label class="pf-field">
+        <span>Nom du projet</span>
+        <input type="text" id="pf_p1_nom" placeholder="Ex : Organisation d’un événement" />
+      </label>
+
+      <label class="pf-field">
+        <span>Résultats obtenus</span>
+        <input type="text" id="pf_p1_resultats" placeholder="Ex : 120 participants, satisfaction 4,6/5" />
+      </label>
+
+      <label class="pf-field pf-full">
+        <span>Contexte du projet</span>
+        <textarea id="pf_p1_contexte" rows="4" placeholder="Où ? Pour qui ? Quel besoin ? Quelles contraintes ?"></textarea>
+      </label>
+
+      <label class="pf-field pf-full">
+        <span>Mon rôle dans le projet</span>
+        <textarea id="pf_p1_role" rows="4" placeholder="Ce que J’AI fait concrètement."></textarea>
+      </label>
+
+      <label class="pf-field pf-full">
+        <span>Compétences appliquées</span>
+        <textarea id="pf_p1_comp" rows="3" placeholder="Ex : communiquer..., planifier..., utiliser tel outil…(verbes d’action)."></textarea>
+      </label>
+    </div>
+  </section>
+
+  <!-- ACTIONS -->
+  <div class="pf-actions">
+    <button class="pf-btn pf-btn-ghost" id="pf_reset" type="button">Réinitialiser</button>
+    <button class="pf-btn" id="pf_download" type="button">Télécharger en Word (.doc)</button>
+  </div>
+
+  <div class="pf-footer">
+    <span class="pf-tip">Conseil Charli :</span> un portfolio est une preuve. Mettez des faits, des actions, des résultats.
+  </div>
+</div>
+
+<style>
+  :root{
+    --ink:#1b1b1b;
+    --muted:#6b6b6b;
+    --paper:#f3efe7;
+    --card:#ffffff;
+    --line:#d8d2c7;
+    --accent:#1f4b5a;
+    --accent2:#c88a2f;
+    --shadow: 0 10px 30px rgba(0,0,0,0.08);
+  }
+
+  .pf-wrap{
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    color:var(--ink);
+    background: linear-gradient(180deg, #fbfaf7, #f2ede3);
+    border:1px solid var(--line);
+    border-radius: 18px;
+    padding: 18px;
+    max-width: 980px;
+    margin: 0 auto;
+    box-shadow: var(--shadow);
+  }
+
+  .pf-header{
+    background: var(--paper);
+    border:1px solid var(--line);
+    border-radius: 14px;
+    padding: 14px 16px;
+    margin-bottom: 14px;
+  }
+
+  .pf-badge{
+    display:inline-block;
+    background: rgba(31,75,90,0.08);
+    color: var(--accent);
+    border:1px solid rgba(31,75,90,0.20);
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: 0.3px;
+  }
+
+  .pf-header h2{
+    margin: 8px 0 4px;
+    font-size: 22px;
+  }
+  .pf-header p{
+    margin: 0;
+    color: var(--muted);
+    font-size: 14px;
+  }
+
+  .pf-card{
+    background: var(--card);
+    border:1px solid var(--line);
+    border-radius: 14px;
+    padding: 14px 16px;
+    margin: 12px 0;
+  }
+
+  .pf-card-title{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-bottom: 10px;
+  }
+
+  .pf-dot{
+    width:10px;
+    height:10px;
+    border-radius: 50%;
+    background: var(--accent2);
+    box-shadow: 0 0 0 4px rgba(200,138,47,0.18);
+  }
+
+  .pf-card h3{
+    margin:0;
+    font-size: 16px;
+  }
+
+  .pf-grid{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .pf-field{
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+  }
+  .pf-field span{
+    font-weight: 700;
+    font-size: 13px;
+  }
+  .pf-field small{
+    color: var(--muted);
+    font-size: 12px;
+  }
+
+  input, textarea{
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 10px 12px;
+    font-size: 14px;
+    outline: none;
+    background: #fff;
+    color: var(--ink);
+  }
+  input:focus, textarea:focus{
+    border-color: rgba(31,75,90,0.55);
+    box-shadow: 0 0 0 4px rgba(31,75,90,0.12);
+  }
+
+  .pf-full{
+    grid-column: 1 / -1;
+  }
+
+  .pf-actions{
+    display:flex;
+    gap:10px;
+    justify-content: flex-end;
+    margin-top: 14px;
+    flex-wrap: wrap;
+  }
+
+  .pf-btn{
+    border: 1px solid rgba(31,75,90,0.30);
+    background: var(--accent);
+    color: white;
+    padding: 10px 14px;
+    border-radius: 12px;
+    font-weight: 800;
+    cursor: pointer;
+    font-size: 14px;
+  }
+
+  .pf-btn-ghost{
+    background: transparent;
+    color: var(--accent);
+    border: 1px solid rgba(31,75,90,0.35);
+  }
+
+  .pf-btn:hover{ filter: brightness(1.05); }
+  .pf-footer{
+    margin-top: 10px;
+    color: var(--muted);
+    font-size: 13px;
+  }
+  .pf-tip{
+    color: var(--accent);
+    font-weight: 800;
+  }
+
+  @media (max-width: 640px){
+    .pf-grid{ grid-template-columns: 1fr; }
+    .pf-actions{ justify-content: stretch; }
+    .pf-btn{ width: 100%; }
+  }
+</style>
+
+<script>
+  // --- Autosave (localStorage) ---
+  const KEY = "pf_portfolio_draft_v1";
+  const fields = [
+    "pf_nom","pf_titre","pf_bio","pf_valeurs",
+    "pf_p1_nom","pf_p1_contexte","pf_p1_role","pf_p1_resultats","pf_p1_comp"
+  ];
+
+  function getEl(id){ return document.getElementById(id); }
+
+  function saveDraft(){
+    const data = {};
+    fields.forEach(id => data[id] = getEl(id).value || "");
+    try { localStorage.setItem(KEY, JSON.stringify(data)); } catch(e) {}
+  }
+
+  function loadDraft(){
+    try{
+      const raw = localStorage.getItem(KEY);
+      if(!raw) return;
+      const data = JSON.parse(raw);
+      fields.forEach(id => { if(data[id] !== undefined) getEl(id).value = data[id]; });
+    }catch(e){}
+  }
+
+  function resetDraft(){
+    fields.forEach(id => getEl(id).value = "");
+    try { localStorage.removeItem(KEY); } catch(e) {}
+  }
+
+  fields.forEach(id => getEl(id).addEventListener("input", saveDraft));
+  loadDraft();
+
+  // --- Export .doc (Word compatible) ---
+  function escapeHtml(str){
+    return (str || "")
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;")
+      .replaceAll("'","&#039;");
+  }
+
+  function nl2br(str){
+    return escapeHtml(str).replace(/\n/g, "<br/>");
+  }
+
+  function buildDocHtml(){
+    const nom = getEl("pf_nom").value.trim();
+    const titre = getEl("pf_titre").value.trim();
+
+    const html = `
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <title>${escapeHtml(titre || "Portfolio")}</title>
+        <style>
+          body{ font-family: Calibri, Arial, sans-serif; color:#1b1b1b; }
+          h1{ font-size: 22pt; margin: 0 0 6pt; }
+          h2{ font-size: 14pt; margin: 18pt 0 6pt; border-bottom: 1px solid #ddd; padding-bottom: 4pt; }
+          .meta{ color:#555; margin-bottom: 10pt; }
+          .box{ border:1px solid #ddd; padding:10pt; border-radius:6pt; margin-bottom:10pt; }
+          .label{ font-weight:700; margin-top: 8pt; }
+        </style>
+      </head>
+      <body>
+        <h1>${escapeHtml(titre || "Portfolio")}</h1>
+        <div class="meta"><strong>Nom :</strong> ${escapeHtml(nom || "—")}</div>
+
+        <h2>1) Introduction</h2>
+        <div class="box">
+          <div class="label">Biographie concise</div>
+          <div>${nl2br(getEl("pf_bio").value)}</div>
+
+          <div class="label">Mes valeurs et mes objectifs</div>
+          <div>${nl2br(getEl("pf_valeurs").value)}</div>
+        </div>
+
+        <h2>2) Mon 1er projet</h2>
+        <div class="box">
+          <div class="label">Nom du projet</div>
+          <div>${escapeHtml(getEl("pf_p1_nom").value)}</div>
+
+          <div class="label">Contexte</div>
+          <div>${nl2br(getEl("pf_p1_contexte").value)}</div>
+
+          <div class="label">Mon rôle</div>
+          <div>${nl2br(getEl("pf_p1_role").value)}</div>
+
+          <div class="label">Résultats obtenus</div>
+          <div>${escapeHtml(getEl("pf_p1_resultats").value)}</div>
+
+          <div class="label">Compétences appliquées</div>
+          <div>${nl2br(getEl("pf_p1_comp").value)}</div>
+        </div>
+
+        <p style="color:#777; font-size:10pt;">
+          Document généré depuis l’activité Rise – Brouillon de portfolio.
+        </p>
+      </body>
+      </html>
+    `;
+    return html;
+  }
+
+  function downloadDoc(){
+    const docHtml = buildDocHtml();
+    const blob = new Blob([docHtml], { type: "application/msword;charset=utf-8" });
+
+    const titre = (getEl("pf_titre").value.trim() || "Mon_portfolio")
+      .replace(/[\\/:*?"<>|]/g, "_");
+
+    const fileName = `${titre}_brouillon.doc`;
+
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = fileName;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    setTimeout(() => URL.revokeObjectURL(link.href), 2000);
+  }
+
+  document.getElementById("pf_download").addEventListener("click", downloadDoc);
+  document.getElementById("pf_reset").addEventListener("click", () => {
+    if(confirm("Réinitialiser tous les champs ?")){
+      resetDraft();
+      saveDraft();
+    }
+  });
+</script>
