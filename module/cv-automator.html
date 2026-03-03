@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>CV Automator — Dossier Confidentiel Charli J.</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Oswald:wght@400;700&family=Open+Sans:wght@400;700&display=swap%22 rel="stylesheet">
+<style>
+
+        :root {
+
+            --polar-blue: #1a2a3a;
+
+            --polar-red: #8b0000;
+
+            --polar-yellow: #f1c40f;
+
+            --editor-bg: #2c2c2c;
+
+        }
+ 
+        body {
+
+            font-family: 'Open Sans', sans-serif;
+
+            margin: 0;
+
+            display: flex;
+
+            height: 100vh;
+
+            background-color: #111;
+
+        }
+ 
+        /* --- ZONE D'ÉDITION (GAUCHE) --- */
+
+        .editor-side {
+
+            width: 35%;
+
+            background: var(--editor-bg);
+
+            color: #ddd;
+
+            padding: 20px;
+
+            overflow-y: auto;
+
+            border-right: 4px solid var(--polar-red);
+
+            box-shadow: 5px 0 15px rgba(0,0,0,0.5);
+
+        }
+ 
+        .editor-header {
+
+            text-align: center;
+
+            margin-bottom: 20px;
+
+        }
+ 
+        .editor-header h2 { 
+
+            font-family: 'Special Elite', cursive; 
+
+            color: var(--polar-yellow); 
+
+            margin: 0; 
+
+            font-size: 1.4em;
+
+            text-transform: uppercase;
+
+        }
+ 
+        .editor-header p {
+
+            font-family: 'Special Elite', cursive;
+
+            font-size: 0.9em;
+
+            color: #bbb;
+
+            margin-top: 5px;
+
+        }
+ 
+        /* BARRE DE PROGRESSION */
+
+        .progress-container {
+
+            background: #444;
+
+            border-radius: 10px;
+
+            height: 12px;
+
+            width: 100%;
+
+            margin: 15px 0 25px 0;
+
+            position: relative;
+
+            overflow: hidden;
+
+            border: 1px solid #555;
+
+        }
+ 
+        #progress-bar {
+
+            background: linear-gradient(90deg, var(--polar-red), var(--polar-yellow));
+
+            width: 0%;
+
+            height: 100%;
+
+            transition: width 0.4s ease-in-out;
+
+        }
+ 
+        .progress-text {
+
+            font-family: 'Oswald', sans-serif;
+
+            font-size: 0.75em;
+
+            color: #bbb;
+
+            text-align: right;
+
+            margin-top: -20px;
+
+            margin-bottom: 15px;
+
+            text-transform: uppercase;
+
+        }
+ 
+        .input-group { margin-bottom: 15px; }
+
+        label { 
+
+            display: block; 
+
+            font-family: 'Oswald', sans-serif;
+
+            font-size: 0.85em; 
+
+            margin-bottom: 4px; 
+
+            color: #bbb;
+
+            text-transform: uppercase;
+
+        }
+ 
+        input, textarea {
+
+            width: 100%;
+
+            padding: 10px;
+
+            background: #3d3d3d;
+
+            border: 1px solid #555;
+
+            color: #fff;
+
+            border-radius: 2px;
+
+            font-family: 'Courier New', Courier, monospace;
+
+            font-size: 0.9em;
+
+        }
+ 
+        input:focus, textarea:focus { border-color: var(--polar-yellow); outline: none; }
+ 
+        .btn-zone {
+
+            display: flex;
+
+            flex-direction: column;
+
+            gap: 8px;
+
+            margin-top: 20px;
+
+            padding-bottom: 40px;
+
+        }
+ 
+        .row-btns { display: flex; gap: 8px; }
+ 
+        button {
+
+            padding: 12px;
+
+            border: none;
+
+            cursor: pointer;
+
+            font-family: 'Oswald', sans-serif;
+
+            text-transform: uppercase;
+
+            font-weight: bold;
+
+            flex: 1;
+
+        }
+ 
+        .btn-pdf { background: var(--polar-red); color: white; }
+
+        .btn-doc { background: #4a4a4a; color: white; }
+
+        .btn-reset { 
+
+            background: transparent; 
+
+            color: #888; 
+
+            border: 1px solid #555; 
+
+            font-size: 0.8em;
+
+            margin-top: 10px;
+
+        }
+ 
+        button:hover { filter: brightness(1.2); }
+
+        .btn-reset:hover { color: #fff; border-color: var(--polar-red); }
+ 
+        /* --- ZONE DE RENDU (DROITE) --- */
+
+        .preview-side {
+
+            width: 65%;
+
+            display: flex;
+
+            justify-content: center;
+
+            align-items: flex-start;
+
+            overflow-y: auto;
+
+            padding: 40px;
+
+            background: #1a1a1a url('https://www.transparenttextures.com/patterns/carbon-fibre.png');
+
+        }
+ 
+        #cv-template {
+
+            width: 210mm;
+
+            min-height: 297mm;
+
+            background-color: white;
+
+            display: flex;
+
+            box-shadow: 0 0 40px rgba(0,0,0,0.8);
+
+        }
+ 
+        /* Colonne Gauche (Etroite) */
+
+        .cv-sidebar {
+
+            width: 32%;
+
+            background-color: var(--polar-blue);
+
+            color: white;
+
+            padding: 40px 25px;
+
+        }
+ 
+        .side-title {
+
+            font-family: 'Oswald', sans-serif;
+
+            border-bottom: 1px solid var(--polar-yellow);
+
+            margin-bottom: 12px;
+
+            padding-bottom: 5px;
+
+            font-size: 1.1em;
+
+            color: var(--polar-yellow);
+
+            text-transform: uppercase;
+
+        }
+
+        .side-content { font-size: 0.85em; line-height: 1.5; margin-bottom: 25px; }
+
+        .cv-list { margin: 0 0 25px 0; padding-left: 15px; list-style-type: none; }
+
+        .cv-list li::before {
+
+            content: "►";
+
+            color: var(--polar-yellow);
+
+            font-size: 0.8em;
+
+            display: inline-block; 
+
+            width: 1.2em;
+
+            margin-left: -1.2em;
+
+        }
+
+        .cv-list li { margin-bottom: 6px; font-size: 0.85em; }
+ 
+        /* Colonne Droite (Principale) */
+
+        .cv-main {
+
+            width: 68%;
+
+            padding: 50px 40px;
+
+            background: #fff;
+
+        }
+ 
+        .cv-header { border-bottom: 4px solid var(--polar-blue); margin-bottom: 25px; padding-bottom: 10px; }
+
+        .cv-name { font-size: 24px; font-weight: bold; color: #1a1a1a; margin: 0; text-transform: uppercase; }
+
+        .cv-job { font-size: 32px; font-weight: 700; color: var(--polar-red); margin: 5px 0; font-family: 'Oswald', sans-serif; text-transform: uppercase; }
+
+        .cv-accroche { 
+
+            font-style: italic; 
+
+            color: #444; 
+
+            margin-bottom: 30px; 
+
+            line-height: 1.6; 
+
+            background: #f4f4f4;
+
+            padding: 15px;
+
+            border-left: 5px solid var(--polar-blue);
+
+        }
+ 
+        .main-section { margin-bottom: 35px; }
+
+        .main-title {
+
+            font-family: 'Oswald', sans-serif;
+
+            font-size: 1.3em;
+
+            color: var(--polar-blue);
+
+            border-bottom: 2px solid var(--polar-blue);
+
+            margin-bottom: 15px;
+
+            text-transform: uppercase;
+
+        }
+
+        .main-content-text { white-space: pre-wrap; font-size: 0.95em; line-height: 1.6; color: #222; }
+ 
+    </style>
+</head>
+<body>
+ 
+    <div class="editor-side">
+<div class="editor-header">
+<h2>ZONE DE SAISIE</h2>
+<p>Rédigez votre profil ici, les modifications s'afficheront automatiquement à droite.</p>
+</div>
+ 
+        <div class="progress-container">
+<div id="progress-bar"></div>
+</div>
+<div class="progress-text" id="progress-label">Complétion : 0%</div>
+ 
+        <div class="input-group">
+<label>Prénom & Nom</label>
+<input type="text" id="in-nom" class="track" oninput="update()" placeholder="Identité civile...">
+</div>
+<div class="input-group">
+<label>Poste Visé</label>
+<input type="text" id="in-poste" class="track" oninput="update()" placeholder="L'objectif de Mister Big Boss...">
+</div>
+<div class="input-group">
+<label>Accroche</label>
+<textarea id="in-accroche" class="track" rows="3" oninput="update()" placeholder="Votre pitch..."></textarea>
+</div>
+<div class="input-group">
+<label>Contact</label>
+<textarea id="in-contact" class="track" rows="2" oninput="update()" placeholder="Tel, Email, Ville..."></textarea>
+</div>
+<div class="input-group">
+<label>Compétences (Une par ligne)</label>
+<textarea id="in-competences" class="track" rows="3" oninput="update()"></textarea>
+</div>
+<div class="input-group">
+<label>Langues (Une par ligne)</label>
+<textarea id="in-langues" class="track" rows="2" oninput="update()"></textarea>
+</div>
+<div class="input-group">
+<label>Loisirs (Un par ligne)</label>
+<textarea id="in-loisirs" class="track" rows="2" oninput="update()"></textarea>
+</div>
+<div class="input-group">
+<label>Réseaux Sociaux</label>
+<input type="text" id="in-reseaux" class="track" oninput="update()">
+</div>
+<div class="input-group">
+<label>Diplômes et Formations</label>
+<textarea id="in-formation" class="track" rows="4" oninput="update()"></textarea>
+</div>
+<div class="input-group">
+<label>Expériences Professionnelles</label>
+<textarea id="in-experience" class="track" rows="6" oninput="update()"></textarea>
+</div>
+ 
+        <div class="btn-zone">
+<div class="row-btns">
+<button class="btn-pdf" onclick="exportPDF()">Rapport PDF</button>
+<button class="btn-doc" onclick="exportDOC()">Fichier .DOC</button>
+</div>
+<button class="btn-reset" onclick="handleReset()">✖ Détruire les preuves (Reset)</button>
+</div>
+</div>
+ 
+    <div class="preview-side">
+<div id="cv-template">
+<div class="cv-sidebar">
+<div class="side-title">Contact</div>
+<div id="out-contact" class="side-content">—</div>
+ 
+                <div class="side-title">Compétences</div>
+<ul id="out-competences" class="cv-list"></ul>
+ 
+                <div class="side-title">Langues</div>
+<ul id="out-langues" class="cv-list"></ul>
+ 
+                <div class="side-title">Loisirs</div>
+<ul id="out-loisirs" class="cv-list"></ul>
+ 
+                <div class="side-title">Réseaux Sociaux</div>
+<div id="out-reseaux" class="side-content">—</div>
+</div>
+ 
+            <div class="cv-main">
+<div class="cv-header">
+<div class="cv-name" id="out-nom">NOM DU CANDIDAT</div>
+<div class="cv-job" id="out-poste">POSTE VISÉ</div>
+</div>
+<div id="out-accroche" class="cv-accroche">L'accroche apparaît ici...</div>
+ 
+                <div class="main-section">
+<div class="main-title">Diplômes et Formations</div>
+<div id="out-formation" class="main-content-text">—</div>
+</div>
+ 
+                <div class="main-section">
+<div class="main-title">Expériences Professionnelles</div>
+<div id="out-experience" class="main-content-text">—</div>
+</div>
+</div>
+</div>
+</div>
+ 
+    <script>
+
+        function update() {
+
+            // Textes directs
+
+            document.getElementById('out-nom').innerText = document.getElementById('in-nom').value.toUpperCase() || "NOM DU CANDIDAT";
+
+            document.getElementById('out-poste').innerText = document.getElementById('in-poste').value || "POSTE VISÉ";
+
+            document.getElementById('out-accroche').innerText = document.getElementById('in-accroche').value || "L'accroche apparaît ici...";
+
+            document.getElementById('out-contact').innerText = document.getElementById('in-contact').value || "—";
+
+            document.getElementById('out-reseaux').innerText = document.getElementById('in-reseaux').value || "—";
+
+            document.getElementById('out-formation').innerText = document.getElementById('in-formation').value || "—";
+
+            document.getElementById('out-experience').innerText = document.getElementById('in-experience').value || "—";
+ 
+            // Listes à puces
+
+            renderBulletList('in-competences', 'out-competences');
+
+            renderBulletList('in-langues', 'out-langues');
+
+            renderBulletList('in-loisirs', 'out-loisirs');
+ 
+            // Progression
+
+            calculateProgress();
+
+        }
+ 
+        function renderBulletList(inputId, outputId) {
+
+            const val = document.getElementById(inputId).value;
+
+            const container = document.getElementById(outputId);
+
+            container.innerHTML = "";
+
+            if (!val.trim()) { container.innerHTML = "<li>—</li>"; return; }
+
+            val.split('\n').forEach(line => {
+
+                if (line.trim()) {
+
+                    const li = document.createElement('li');
+
+                    li.innerText = line;
+
+                    container.appendChild(li);
+
+                }
+
+            });
+
+        }
+ 
+        function calculateProgress() {
+
+            const fields = document.querySelectorAll('.track');
+
+            let filled = 0;
+
+            fields.forEach(f => { if(f.value.trim() !== "") filled++; });
+
+            const percent = Math.round((filled / fields.length) * 100);
+
+            document.getElementById('progress-bar').style.width = percent + "%";
+
+            document.getElementById('progress-label').innerText = "Complétion : " + percent + "%";
+
+        }
+ 
+        function handleReset() {
+
+            if(confirm("⚠ Agent, voulez-vous vraiment effacer toutes les données ?")) window.location.reload();
+
+        }
+ 
+        function exportPDF() {
+
+            const element = document.getElementById('cv-template');
+
+            html2pdf().set({
+
+                margin: 0,
+
+                filename: 'Mon_Dossier_Candidat.pdf',
+
+                image: { type: 'jpeg', quality: 0.98 },
+
+                html2canvas: { scale: 2 },
+
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+
+            }).from(element).save();
+
+        }
+ 
+        function exportDOC() {
+
+            const content = document.getElementById('cv-template').innerHTML;
+
+            const style = `<style>body{font-family:sans-serif;} .cv-sidebar{width:30%; float:left; background:#1a2a3a; color:white; padding:20px;} .cv-main{width:65%; float:right; padding:20px;}</style>`;
+
+            const blob = new Blob(['\ufeff', style + content], { type: 'application/msword' });
+
+            saveAs(blob, 'Mon_Dossier_Candidat.doc');
+
+        }
+</script>
+</body>
+</html>
+ 
