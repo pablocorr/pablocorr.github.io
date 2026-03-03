@@ -1,0 +1,463 @@
+<div class="pf-wrap" id="pfApp">
+
+  <!-- COUVERTURE STYLE CHARLI -->
+  <header class="pf-cover">
+    <div class="pf-cover-top">
+      <div class="pf-stamp">CONFIDENTIEL</div>
+      <div class="pf-case">DOSSIER CANDIDAT • PORTFOLIO</div>
+    </div>
+
+    <div class="pf-cover-main">
+      <div class="pf-cover-left">
+        <h1>PORTFOLIO</h1>
+        <p class="pf-cover-sub">La preuve concrète. Dossier de compétences numériques.</p>
+
+        <div class="pf-cover-lines">
+          <div><span>Objet :</span> <strong>Présentation de réalisations</strong></div>
+          <div><span>Enquête :</span> <strong>Mission 2.3</strong></div>
+          <div><span>Agent :</span> <strong>Charli J.</strong></div>
+        </div>
+      </div>
+
+      <div class="pf-cover-right">
+        <div class="pf-cover-field">
+          <label>Nom</label>
+          <input type="text" id="name" placeholder="Ex. Eva Garcia" />
+        </div>
+
+        <div class="pf-cover-field">
+          <label>Titre du portfolio</label>
+          <input type="text" id="title" placeholder="Ex. Assistante RH • Gestion & coordination" />
+        </div>
+
+        <div class="pf-cover-note">
+          <div class="pf-cover-note-title">Note de Charli</div>
+          <div class="pf-cover-note-text">
+            Le CV parle. Le portfolio prouve.<br/>
+            Clair, concret, crédible.
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- SECTION 1 -->
+  <section class="pf-card">
+    <div class="pf-card-title">
+      <span class="pf-dot"></span>
+      <h3>Introduction</h3>
+    </div>
+
+    <div class="pf-grid">
+      <label class="pf-field pf-span2">
+        <span>Biographie concise</span>
+        <textarea id="bio" rows="4" placeholder="En 4–6 lignes : qui vous êtes, ce que vous savez faire, ce que vous recherchez."></textarea>
+      </label>
+
+      <label class="pf-field pf-span2">
+        <span>Mes valeurs et mes objectifs</span>
+        <textarea id="values" rows="4" placeholder="Ex. Travail d’équipe, rigueur, utilité. Objectif : intégrer une structure sur un poste…"></textarea>
+      </label>
+    </div>
+  </section>
+
+  <!-- SECTION 2 -->
+  <section class="pf-card">
+    <div class="pf-card-title">
+      <span class="pf-dot"></span>
+      <h3>Mon 1er projet</h3>
+    </div>
+
+    <div class="pf-grid">
+      <label class="pf-field pf-span2">
+        <span>Nom du projet</span>
+        <input type="text" id="p1_name" placeholder="Ex. Organisation d’un événement interne" />
+      </label>
+
+      <label class="pf-field pf-span2">
+        <span>Contexte du projet</span>
+        <textarea id="p1_context" rows="4" placeholder="Où ? Quand ? Pour qui ? Quel besoin/problème au départ ?"></textarea>
+      </label>
+
+      <label class="pf-field pf-span2">
+        <span>Mon rôle dans le projet</span>
+        <textarea id="p1_role" rows="4" placeholder="Ce que VOUS avez fait précisément. Votre périmètre. Vos responsabilités."></textarea>
+      </label>
+
+      <label class="pf-field pf-span2">
+        <span>Résultats obtenus</span>
+        <textarea id="p1_results" rows="4" placeholder="Résultats concrets : chiffres, retours, livrables, délais, impact."></textarea>
+      </label>
+
+      <label class="pf-field pf-span2">
+        <span>Compétences appliquées</span>
+        <textarea id="p1_skills" rows="3" placeholder="Ex. Organisation, communication, gestion de planning, outils numériques…(verbes d'action)."></textarea>
+      </label>
+    </div>
+  </section>
+
+  <!-- ACTIONS -->
+  <section class="pf-actions">
+    <button class="pf-btn pf-btn-ghost" type="button" id="resetBtn">Réinitialiser</button>
+    <button class="pf-btn" type="button" id="downloadBtn">Télécharger en Word (.doc)</button>
+  </section>
+
+  <p class="pf-footnote">
+    Astuce : un portfolio convainc quand il montre votre rôle, vos preuves et vos résultats.
+  </p>
+</div>
+
+<style>
+  /* Base V1 “clair / beige / cartes” */
+  .pf-wrap{
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 18px;
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    color: #1b1b1b;
+    background: #f6f1e6; /* fond beige doux */
+    border-radius: 18px;
+  }
+
+  /* Couverture */
+  .pf-cover{
+    border-radius: 18px;
+    padding: 16px;
+    background: linear-gradient(135deg, #0b1520, #1b2a3a);
+    color: #f2f2f2;
+    box-shadow: 0 10px 24px rgba(0,0,0,.18);
+    margin-bottom: 14px;
+    border: 1px solid rgba(255,255,255,.08);
+  }
+  .pf-cover-top{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    margin-bottom: 12px;
+  }
+  .pf-stamp{
+    display:inline-block;
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 2px solid rgba(202,162,74,.9);
+    color: rgba(202,162,74,.95);
+    font-weight: 900;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    transform: rotate(-2deg);
+    background: rgba(0,0,0,.18);
+  }
+  .pf-case{
+    font-size: 12px;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    opacity: .9;
+  }
+  .pf-cover-main{
+    display:grid;
+    grid-template-columns: 1.1fr 0.9fr;
+    gap: 16px;
+  }
+  .pf-cover-left h1{
+    margin: 0 0 6px;
+    font-size: 28px;
+    letter-spacing: .02em;
+  }
+  .pf-cover-sub{
+    margin: 0 0 14px;
+    opacity: .9;
+    font-size: 14px;
+  }
+  .pf-cover-lines{
+    background: rgba(255,255,255,.06);
+    border: 1px solid rgba(255,255,255,.10);
+    border-radius: 14px;
+    padding: 12px;
+    font-size: 13px;
+  }
+  .pf-cover-lines div{
+    display:flex;
+    gap:8px;
+    padding: 6px 0;
+    border-bottom: 1px dashed rgba(255,255,255,.12);
+  }
+  .pf-cover-lines div:last-child{ border-bottom: none; }
+  .pf-cover-lines span{ opacity:.75; width: 110px; }
+
+  .pf-cover-right{
+    background: rgba(255,255,255,.06);
+    border: 1px solid rgba(255,255,255,.10);
+    border-radius: 14px;
+    padding: 12px;
+  }
+  .pf-cover-field{ margin-bottom: 10px; }
+  .pf-cover-field label{
+    display:block;
+    font-size: 12px;
+    font-weight: 800;
+    margin-bottom: 6px;
+    opacity: .9;
+  }
+  .pf-cover-field input{
+    width:100%;
+    box-sizing:border-box;
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,.14);
+    padding: 10px 12px;
+    font-size: 14px;
+    background: rgba(0,0,0,.16);
+    color: #fff;
+    outline:none;
+  }
+  .pf-cover-field input:focus{
+    border-color: rgba(202,162,74,.9);
+    box-shadow: 0 0 0 4px rgba(202,162,74,.18);
+  }
+  .pf-cover-note{
+    margin-top: 12px;
+    border-radius: 14px;
+    padding: 12px;
+    background: rgba(0,0,0,.18);
+    border: 1px solid rgba(255,255,255,.10);
+  }
+  .pf-cover-note-title{
+    font-weight: 900;
+    color: rgba(202,162,74,.95);
+    letter-spacing:.04em;
+    margin-bottom: 6px;
+  }
+  .pf-cover-note-text{
+    font-size: 13px;
+    opacity: .92;
+  }
+
+  /* Cartes */
+  .pf-card{
+    background: #fff;
+    border-radius: 18px;
+    padding: 16px;
+    box-shadow: 0 10px 24px rgba(0,0,0,.08);
+    border: 1px solid rgba(0,0,0,.06);
+    margin: 14px 0;
+  }
+  .pf-card-title{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-bottom: 12px;
+  }
+  .pf-dot{
+    width: 10px;
+    height: 10px;
+    border-radius: 999px;
+    background: #caa24a;
+    box-shadow: 0 0 0 4px rgba(202,162,74,.18);
+  }
+  .pf-card h3{
+    margin:0;
+    font-size: 18px;
+  }
+
+  .pf-grid{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .pf-span2{ grid-column: span 2; }
+
+  .pf-field span{
+    display:block;
+    font-size: 13px;
+    font-weight: 650;
+    margin-bottom: 6px;
+    color: #1d2a36;
+  }
+  .pf-field input, .pf-field textarea{
+    width:100%;
+    box-sizing:border-box;
+    border-radius: 14px;
+    border: 1px solid rgba(0,0,0,.14);
+    padding: 10px 12px;
+    font-size: 14px;
+    outline: none;
+    background: #fafafa;
+  }
+  .pf-field input:focus, .pf-field textarea:focus{
+    border-color: rgba(202,162,74,.9);
+    box-shadow: 0 0 0 4px rgba(202,162,74,.18);
+    background: #fff;
+  }
+  .pf-field input::placeholder, .pf-field textarea::placeholder{
+    color: rgba(0,0,0,.35);
+    font-weight: 600;
+  }
+
+  /* Actions */
+  .pf-actions{
+    display:flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: 10px;
+  }
+  .pf-btn{
+    border: none;
+    border-radius: 999px;
+    padding: 10px 14px;
+    font-weight: 750;
+    cursor: pointer;
+    background: #caa24a;
+    color: #1b1b1b;
+    box-shadow: 0 10px 20px rgba(0,0,0,.14);
+  }
+  .pf-btn:hover{ filter: brightness(1.03); }
+  .pf-btn-ghost{
+    background: #eef2f6;
+    color: #1b1b1b;
+    box-shadow: none;
+    border: 1px solid rgba(0,0,0,.10);
+  }
+
+  .pf-footnote{
+    margin-top: 10px;
+    font-size: 12px;
+    opacity: .75;
+  }
+
+  @media (max-width: 720px){
+    .pf-grid{ grid-template-columns: 1fr; }
+    .pf-span2{ grid-column: span 1; }
+    .pf-actions{ justify-content: stretch; }
+    .pf-btn{ width: 100%; }
+    .pf-cover-main{ grid-template-columns: 1fr; }
+    .pf-cover-lines span{ width: 95px; }
+  }
+</style>
+
+<script>
+  // Autosave local
+  const STORAGE_KEY = "pf_portfolio_v1_charli_cover";
+  const fields = [
+    "name","title","bio","values",
+    "p1_name","p1_context","p1_role","p1_results","p1_skills"
+  ];
+
+  function load(){
+    try{
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if(!raw) return;
+      const data = JSON.parse(raw);
+      fields.forEach(id => {
+        const el = document.getElementById(id);
+        if(el && data[id] !== undefined) el.value = data[id];
+      });
+    }catch(e){}
+  }
+
+  function save(){
+    try{
+      const data = {};
+      fields.forEach(id => {
+        const el = document.getElementById(id);
+        if(el) data[id] = el.value || "";
+      });
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    }catch(e){}
+  }
+
+  fields.forEach(id => {
+    const el = document.getElementById(id);
+    if(el) el.addEventListener("input", save);
+  });
+
+  // Reset
+  document.getElementById("resetBtn").addEventListener("click", () => {
+    if(!confirm("Réinitialiser tous les champs ?")) return;
+    fields.forEach(id => {
+      const el = document.getElementById(id);
+      if(el) el.value = "";
+    });
+    try{ localStorage.removeItem(STORAGE_KEY); }catch(e){}
+  });
+
+  // Export Word
+  function escapeHtml(str){
+    return (str || "")
+      .replace(/&/g,"&amp;")
+      .replace(/</g,"&lt;")
+      .replace(/>/g,"&gt;")
+      .replace(/"/g,"&quot;")
+      .replace(/'/g,"&#039;")
+      .replace(/\n/g,"<br/>");
+  }
+
+  document.getElementById("downloadBtn").addEventListener("click", () => {
+    const v = {};
+    fields.forEach(id => v[id] = (document.getElementById(id)?.value || ""));
+
+    const docHtml = `
+    <html>
+      <head>
+        <meta charset="utf-8">
+        <title>Portfolio - ${escapeHtml(v.name)}</title>
+        <style>
+          body{ font-family: Calibri, Arial, sans-serif; font-size: 12pt; }
+          h1{ font-size: 20pt; margin-bottom: 0; }
+          h2{ font-size: 14pt; margin-top: 18pt; }
+          .muted{ color:#555; }
+          .block{ margin: 10pt 0; }
+          .label{ font-weight:700; }
+          .card{ border:1px solid #ddd; padding:12pt; border-radius:8pt; }
+          .cover{ border:2px solid #caa24a; padding:18pt; border-radius:10pt; }
+          .stamp{ display:inline-block; border:2px solid #caa24a; padding:6pt 10pt; font-weight:900; color:#caa24a; }
+          .small{ font-size:10pt; letter-spacing:1.2pt; text-transform:uppercase; color:#555; }
+        </style>
+      </head>
+      <body>
+        <div class="cover">
+          <div class="small">DOSSIER CANDIDAT • PORTFOLIO</div>
+          <div style="margin-top:10pt;"><span class="stamp">CONFIDENTIEL</span></div>
+          <h1 style="margin:14pt 0 4pt 0;">${escapeHtml(v.title || "PORTFOLIO")}</h1>
+          <div class="muted">${escapeHtml(v.name)}</div>
+
+          <div style="border-top:1px solid #ddd;margin-top:12pt;padding-top:10pt;">
+            <div><b>Objet :</b> Présentation de réalisations</div>
+            <div><b>Enquête :</b> Mission 2.3</div>
+            <div><b>Agent référent :</b> Charli J.</div>
+          </div>
+        </div>
+
+        <div style="page-break-after:always;"></div>
+
+        <h2>Introduction</h2>
+        <div class="card">
+          <div class="block"><span class="label">Biographie concise :</span><br>${escapeHtml(v.bio)}</div>
+          <div class="block"><span class="label">Mes valeurs et mes objectifs :</span><br>${escapeHtml(v.values)}</div>
+        </div>
+
+        <h2>Mon 1er projet</h2>
+        <div class="card">
+          <div class="block"><span class="label">Nom du projet :</span><br>${escapeHtml(v.p1_name)}</div>
+          <div class="block"><span class="label">Contexte :</span><br>${escapeHtml(v.p1_context)}</div>
+          <div class="block"><span class="label">Mon rôle :</span><br>${escapeHtml(v.p1_role)}</div>
+          <div class="block"><span class="label">Résultats :</span><br>${escapeHtml(v.p1_results)}</div>
+          <div class="block"><span class="label">Compétences appliquées :</span><br>${escapeHtml(v.p1_skills)}</div>
+        </div>
+      </body>
+    </html>`;
+
+    const blob = new Blob(['\ufeff', docHtml], { type: "application/msword" });
+    const filename = (v.name ? `Portfolio_${v.name}` : "Portfolio").replace(/\s+/g,"_") + ".doc";
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    setTimeout(() => {
+      URL.revokeObjectURL(link.href);
+      link.remove();
+    }, 500);
+  });
+
+  load();
+</script>
